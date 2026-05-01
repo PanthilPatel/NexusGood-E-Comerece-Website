@@ -1,0 +1,180 @@
+import { useState, useEffect } from 'react';
+import { 
+  DollarSign, ShoppingBag, Users, 
+  TrendingUp, Activity, ArrowUpRight, 
+  ArrowDownRight, Zap, Target, PieChart as PieIcon
+} from 'lucide-react';
+import { 
+  AreaChart, Area, XAxis, YAxis, 
+  CartesianGrid, Tooltip, ResponsiveContainer,
+  BarChart, Bar, Cell
+} from 'recharts';
+import api from '../../services/api';
+import Skeleton from '../../components/ui/Skeleton';
+
+export default function AdminDashboard() {
+  const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    const fetchOverview = async () => {
+      try {
+        setLoading(true);
+        const res = await api.get('/analytics/overview');
+        if (res.data?.success) {
+          setData(res.data.data);
+        }
+      } catch (err) {
+        setError('Failed to sync metrics hub.');
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchOverview();
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="space-y-10">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+           {Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-48" />)}
+        </div>
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+           <Skeleton className="lg:col-span-8 h-[500px]" />
+           <Skeleton className="lg:col-span-4 h-[500px]" />
+        </div>
+      </div>
+    );
+  }
+
+  const kpis = [
+    { label: 'Net Revenue', value: `₹${data?.totalRevenue?.toLocaleString()}`, icon: DollarSign, color: 'text-indigo-400', bg: 'bg-indigo-500/10', change: '+14%', up: true },
+    { label: 'Active Orders', value: data?.totalOrders, icon: ShoppingBag, color: 'text-rose-400', bg: 'bg-rose-500/10', change: '+8%', up: true },
+    { label: 'Member Core', value: data?.totalUsers, icon: Users, color: 'text-emerald-400', bg: 'bg-emerald-500/10', change: '-2%', up: false },
+    { label: 'Velocity', value: '88.4%', icon: Zap, color: 'text-amber-400', bg: 'bg-amber-500/10', change: '+1%', up: true },
+  ];
+
+  return (
+    <div className="space-y-12 animate-fade-in">
+      
+      {/* KPI Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        {kpis.map((kpi, i) => (
+          <div key={i} className="glass-card p-8 space-y-8 hover:border-white/20 hover:scale-[1.02] transition-all">
+             <div className="flex justify-between items-start">
+                <div className={`w-14 h-14 ${kpi.bg} ${kpi.color} rounded-2xl flex items-center justify-center shadow-inner`}>
+                   <kpi.icon size={28} strokeWidth={1.5} />
+                </div>
+                <div className={`flex items-center gap-1 text-[10px] font-bold px-2 py-1 rounded-full ${kpi.up ? 'bg-emerald-500/10 text-emerald-500' : 'bg-rose-500/10 text-rose-500'}`}>
+                   {kpi.up ? <ArrowUpRight size={12} /> : <ArrowDownRight size={12} />} {kpi.change}
+                </div>
+             </div>
+             <div>
+                <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">{kpi.label}</p>
+                <h4 className="text-3xl font-bold text-white mt-1 tracking-tight">{kpi.value}</h4>
+             </div>
+          </div>
+        ))}
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
+         
+         {/* Growth Area Chart */}
+         <div className="lg:col-span-8 glass-card p-10 space-y-10">
+            <div className="flex justify-between items-center">
+               <div className="space-y-1">
+                  <h3 className="text-2xl font-bold tracking-tight text-white">Acquisition Pulse</h3>
+                  <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest">Real-time revenue stream analysis</p>
+               </div>
+               <div className="flex gap-2">
+                  <div className="w-3 h-3 rounded-full bg-indigo-500" />
+                  <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Revenue</span>
+               </div>
+            </div>
+            
+            <div className="h-[400px] w-full">
+               <ResponsiveContainer width="100%" height="100%">
+                  <AreaChart data={data?.salesTrend || []}>
+                     <defs>
+                        <linearGradient id="colorPulse" x1="0" y1="0" x2="0" y2="1">
+                           <stop offset="5%" stopColor="#6366f1" stopOpacity={0.3}/>
+                           <stop offset="95%" stopColor="#6366f1" stopOpacity={0}/>
+                        </linearGradient>
+                     </defs>
+                     <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.03)" vertical={false} />
+                     <XAxis 
+                       dataKey="_id" 
+                       axisLine={false} 
+                       tickLine={false} 
+                       tick={{fill: '#64748b', fontSize: 10, fontWeight: 700}} 
+                       dy={10} 
+                     />
+                     <YAxis 
+                       axisLine={false} 
+                       tickLine={false} 
+                       tick={{fill: '#64748b', fontSize: 10, fontWeight: 700}} 
+                     />
+                     <Tooltip 
+                        contentStyle={{ backgroundColor: '#0f172a', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.05)', boxShadow: '0 20px 25px -5px rgba(0,0,0,0.5)' }}
+                        itemStyle={{ color: '#fff', fontSize: '12px', fontWeight: 'bold' }}
+                     />
+                     <Area type="monotone" dataKey="revenue" stroke="#6366f1" strokeWidth={4} fillOpacity={1} fill="url(#colorPulse)" />
+                  </AreaChart>
+               </ResponsiveContainer>
+            </div>
+         </div>
+
+         {/* Sidebar Stats */}
+         <div className="lg:col-span-4 space-y-10">
+            {/* Efficiency Node */}
+            <div className="bg-gradient-to-br from-indigo-600 to-indigo-900 rounded-[2.5rem] p-10 space-y-8 shadow-2xl shadow-indigo-500/20 relative overflow-hidden group">
+               <div className="absolute -right-10 -top-10 w-40 h-40 bg-white/10 rounded-full blur-3xl group-hover:scale-150 transition-transform duration-700" />
+               <div className="w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center text-white backdrop-blur-md">
+                  <Target size={32} />
+               </div>
+               <div className="space-y-2">
+                  <h3 className="text-2xl font-bold text-white tracking-tight">Objective Node</h3>
+                  <p className="text-sm text-indigo-100/70 font-light leading-relaxed">
+                    System synchronization is optimal. Acquisition targets for Q2 are at 84.2% completion.
+                  </p>
+               </div>
+               <div className="pt-4">
+                  <div className="h-2 w-full bg-white/10 rounded-full overflow-hidden">
+                     <div className="h-full bg-white w-[84%] rounded-full shadow-[0_0_12px_rgba(255,255,255,0.5)]" />
+                  </div>
+               </div>
+            </div>
+
+            {/* Performance Metrics */}
+            <div className="glass-card p-10 space-y-8">
+               <div className="flex items-center gap-3">
+                  <Activity size={20} className="text-emerald-500" />
+                  <h3 className="text-lg font-bold text-white">System Integrity</h3>
+               </div>
+               <div className="space-y-6">
+                  {[
+                    { label: 'API Latency', value: '24ms', level: 95 },
+                    { label: 'DB Payload', value: '1.2gb', level: 40 },
+                    { label: 'Uptime Node', value: '99.9%', level: 100 }
+                  ].map((stat, i) => (
+                    <div key={i} className="space-y-2">
+                       <div className="flex justify-between text-[10px] font-bold text-slate-500 uppercase tracking-widest">
+                          <span>{stat.label}</span>
+                          <span className="text-white">{stat.value}</span>
+                       </div>
+                       <div className="h-1 w-full bg-white/5 rounded-full overflow-hidden">
+                          <div 
+                            className={`h-full rounded-full ${stat.level > 90 ? 'bg-emerald-500' : 'bg-indigo-500'}`} 
+                            style={{ width: `${stat.level}%` }} 
+                          />
+                       </div>
+                    </div>
+                  ))}
+               </div>
+            </div>
+         </div>
+      </div>
+    </div>
+  );
+}

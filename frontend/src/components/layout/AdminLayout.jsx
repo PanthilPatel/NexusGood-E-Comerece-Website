@@ -1,0 +1,181 @@
+import { useState, useEffect } from 'react';
+import { Link, useLocation, Outlet, useNavigate } from 'react-router-dom';
+import { 
+  LayoutDashboard, Package, ShoppingCart, 
+  Users, BarChart2, Ticket, LogOut, 
+  Menu, X, Bell, Search, Globe, ChevronRight,
+  Settings, HelpCircle, User, Shield
+} from 'lucide-react';
+import useAuthStore from '../../store/authStore';
+import toast from 'react-hot-toast';
+
+export default function AdminLayout() {
+  const location = useLocation();
+  const navigate = useNavigate();
+  const { user, logout } = useAuthStore();
+  const [collapsed, setCollapsed] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => setScrolled(window.scrollY > 20);
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  const menuItems = [
+    { group: 'Control', items: [
+      { label: 'Overview', icon: LayoutDashboard, path: '/admin' },
+      { label: 'Analytics', icon: BarChart2, path: '/admin/analytics' },
+    ]},
+    { group: 'Inventory', items: [
+      { label: 'Products', icon: Package, path: '/admin/products' },
+      { label: 'Orders', icon: ShoppingCart, path: '/admin/orders' },
+    ]},
+    { group: 'Users & Marketing', items: [
+      { label: 'Customers', icon: Users, path: '/admin/users' },
+      { label: 'Promotions', icon: Ticket, path: '/admin/coupons' },
+    ]},
+  ];
+
+  const handleLogout = async () => {
+    await logout();
+    toast.success('Admin session terminated.');
+    navigate('/login');
+  };
+
+  return (
+    <div className="min-h-screen bg-[#020617] flex text-slate-200 font-sans selection:bg-indigo-500/30">
+      
+      {/* Sidebar Navigation */}
+      <aside 
+        className={`fixed left-0 top-0 h-screen bg-[#0f172a] border-r border-white/5 flex flex-col transition-all duration-500 z-[100] ${
+          collapsed ? 'w-20' : 'w-72'
+        } shadow-2xl shadow-black/50`}
+      >
+        {/* Brand Node */}
+        <div className="h-24 flex items-center px-6 border-b border-white/5 relative overflow-hidden">
+           <div className="absolute inset-0 bg-gradient-to-br from-indigo-600/5 to-transparent" />
+           <div className={`flex items-center gap-4 transition-all duration-500 ${collapsed ? 'justify-center w-full' : ''}`}>
+              <div className="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center shadow-lg shadow-indigo-600/20 flex-shrink-0">
+                 <Shield size={20} className="text-white" />
+              </div>
+              {!collapsed && (
+                <div className="flex flex-col">
+                   <span className="font-bold text-lg tracking-tight text-white uppercase">Elite<span className="text-indigo-500">Core</span></span>
+                   <span className="text-[9px] font-bold text-slate-500 uppercase tracking-[0.2em]">Logistics v2.4</span>
+                </div>
+              )}
+           </div>
+        </div>
+
+        {/* Navigation Items */}
+        <nav className="flex-1 px-4 py-8 space-y-8 overflow-y-auto custom-scrollbar">
+          {menuItems.map((group, idx) => (
+            <div key={idx} className="space-y-3">
+              {!collapsed && (
+                <h3 className="px-4 text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em]">
+                  {group.group}
+                </h3>
+              )}
+              <div className="space-y-1">
+                {group.items.map(item => (
+                  <Link 
+                    key={item.path}
+                    to={item.path}
+                    className={`flex items-center gap-4 px-4 py-3.5 rounded-2xl transition-all relative group ${
+                      location.pathname === item.path 
+                      ? 'bg-indigo-600 text-white shadow-xl shadow-indigo-600/20' 
+                      : 'text-slate-400 hover:text-white hover:bg-white/5'
+                    }`}
+                  >
+                    <item.icon size={20} strokeWidth={2} className={location.pathname === item.path ? 'text-white' : 'text-slate-400 group-hover:text-indigo-400 transition-colors'} />
+                    {!collapsed && <span className="font-bold text-xs uppercase tracking-widest">{item.label}</span>}
+                    {location.pathname === item.path && !collapsed && (
+                      <div className="ml-auto w-1.5 h-1.5 bg-white rounded-full animate-pulse" />
+                    )}
+                  </Link>
+                ))}
+              </div>
+            </div>
+          ))}
+        </nav>
+
+        {/* Sidebar Footer */}
+        <div className="p-4 border-t border-white/5 bg-black/10">
+           <button 
+            onClick={handleLogout}
+            className={`w-full flex items-center gap-4 px-4 py-4 text-rose-500 hover:bg-rose-500/10 rounded-2xl transition-all group ${collapsed ? 'justify-center' : ''}`}
+           >
+             <LogOut size={20} className="group-hover:-translate-x-1 transition-transform" />
+             {!collapsed && <span className="font-bold text-xs uppercase tracking-widest">Terminate</span>}
+           </button>
+        </div>
+      </aside>
+
+      {/* Main Content Node */}
+      <div className={`flex-1 flex flex-col transition-all duration-500 ${collapsed ? 'ml-20' : 'ml-72'}`}>
+        
+        {/* Global Control Header */}
+        <header 
+          className={`h-24 sticky top-0 z-[90] flex items-center justify-between px-10 transition-all duration-300 ${
+            scrolled ? 'bg-[#020617]/80 backdrop-blur-xl border-b border-white/5 shadow-xl' : 'bg-transparent'
+          }`}
+        >
+           <div className="flex items-center gap-6">
+              <button 
+                onClick={() => setCollapsed(!collapsed)} 
+                className="w-10 h-10 flex items-center justify-center bg-white/5 border border-white/10 rounded-xl text-slate-400 hover:text-white hover:bg-white/10 transition-all"
+              >
+                 {collapsed ? <ChevronRight size={20} /> : <Menu size={20} />}
+              </button>
+              <div className="flex items-center gap-3 bg-white/5 border border-white/5 px-4 py-2 rounded-xl text-slate-500 focus-within:border-indigo-500/50 focus-within:text-indigo-400 transition-all">
+                 <Search size={16} />
+                 <input type="text" placeholder="Search protocol..." className="bg-transparent border-none outline-none text-xs font-bold uppercase tracking-widest w-64" />
+              </div>
+           </div>
+
+           <div className="flex items-center gap-6">
+              <div className="flex items-center gap-2">
+                 <button className="w-10 h-10 flex items-center justify-center bg-white/5 border border-white/10 rounded-xl text-slate-400 hover:text-indigo-400 transition-all relative">
+                    <Bell size={18} />
+                    <span className="absolute top-2.5 right-2.5 w-2 h-2 bg-indigo-500 rounded-full border-2 border-[#020617]" />
+                 </button>
+                 <Link to="/" className="w-10 h-10 flex items-center justify-center bg-white/5 border border-white/10 rounded-xl text-slate-400 hover:text-emerald-400 transition-all" title="View Storefront">
+                    <Globe size={18} />
+                 </Link>
+              </div>
+              <div className="h-8 w-[1px] bg-white/5" />
+              <div className="flex items-center gap-4 group cursor-pointer">
+                 <div className="text-right">
+                    <p className="text-xs font-bold text-white uppercase tracking-tight">{user?.name}</p>
+                    <p className="text-[10px] font-bold text-indigo-500 uppercase tracking-widest">Root Admin</p>
+                 </div>
+                 <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-indigo-600 to-indigo-400 p-0.5 shadow-lg shadow-indigo-500/20 group-hover:scale-105 transition-transform">
+                    <div className="w-full h-full bg-[#0f172a] rounded-[0.8rem] flex items-center justify-center font-bold text-white text-lg">
+                       {user?.name?.charAt(0)}
+                    </div>
+                 </div>
+              </div>
+           </div>
+        </header>
+
+        {/* Content Projection Area */}
+        <main className="flex-1 p-10 space-y-10 max-w-[1600px] mx-auto w-full">
+           <Outlet />
+        </main>
+
+        {/* System Footer */}
+        <footer className="p-10 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-6">
+           <p className="text-[10px] font-bold text-slate-600 uppercase tracking-[0.2em]">
+             &copy; 2024 NexusGood Enterprise Control Panel. All protocols secured.
+           </p>
+           <div className="flex items-center gap-8">
+              <Link to="#" className="text-[10px] font-bold text-slate-500 hover:text-indigo-400 transition-colors uppercase tracking-widest">Terms</Link>
+              <Link to="#" className="text-[10px] font-bold text-slate-500 hover:text-indigo-400 transition-colors uppercase tracking-widest">Privacy</Link>
+              <Link to="#" className="text-[10px] font-bold text-slate-500 hover:text-indigo-400 transition-colors uppercase tracking-widest">Support</Link>
+           </div>
+        </footer>
+      </div>
+    </div>
+  );
+}

@@ -36,6 +36,8 @@ export default function ProductModal({ isOpen, onClose, product = null, onSucces
   const [imagesToRemove, setImagesToRemove] = useState([]);
   const [colorInput, setColorInput] = useState({ name: '', hex: '#6366f1' });
 
+
+
   useEffect(() => {
     if (!isOpen) return;
     fetchCategories();
@@ -139,31 +141,58 @@ export default function ProductModal({ isOpen, onClose, product = null, onSucces
     setFiles(prev => prev.filter((_, i) => i !== index));
   };
 
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, [isOpen]);
+
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-[#030712]/80 backdrop-blur-sm" onClick={onClose} />
-
-      <div className="relative w-full max-w-2xl bg-[#0f172a] border border-white/10 rounded-3xl shadow-2xl overflow-hidden">
-        {/* Header */}
-        <div className="flex items-center justify-between px-6 py-5 border-b border-white/[0.06] bg-white/[0.02]">
+    <div 
+      className="fixed top-0 right-0 bottom-0 z-[500] flex items-center justify-center bg-black/60 backdrop-blur-sm transition-all duration-300"
+      style={{ 
+        left: 'var(--sidebar-width, 18rem)',
+        width: 'calc(100vw - var(--sidebar-width, 18rem))'
+      }}
+    >
+      {/* Absolute backdrop for click-to-close */}
+      <div className="absolute inset-0" onClick={onClose} />
+      
+      {/* Modal Card - Strictly Centered */}
+      <div 
+        className="relative w-full max-w-3xl m-0 p-0 bg-[#0f172a] border border-white/10 rounded-xl overflow-hidden shadow-2xl flex flex-col max-h-[85vh] transition-all duration-300"
+      >
+        {/* Fixed Header */}
+        <div className="flex items-center justify-between px-6 py-5 border-b border-white/[0.06] bg-white/[0.02] flex-shrink-0">
           <div className="flex items-center gap-3">
             <div className="w-9 h-9 bg-indigo-600/15 rounded-xl flex items-center justify-center text-indigo-400">
-              <Package size={18} />
+              <Package size={20} />
             </div>
             <div>
-              <h3 className="text-lg font-bold text-white">{product ? 'Edit Product' : 'Add New Product'}</h3>
-              <p className="text-[10px] text-slate-500 uppercase tracking-widest">Inventory Management</p>
+              <h3 className="text-lg font-bold text-white tracking-tight">
+                {product ? 'Edit Artifact' : 'New Integration'}
+              </h3>
+              <p className="text-[10px] text-slate-500 font-medium uppercase tracking-widest">
+                {product ? `Protocol ID: ${product._id.slice(-8)}` : 'System wide deployment'}
+              </p>
             </div>
           </div>
-          <button onClick={onClose} className="p-2 text-slate-500 hover:text-white hover:bg-white/5 rounded-xl transition-all">
-            <X size={18} />
+          <button onClick={onClose} className="p-2 hover:bg-white/5 rounded-xl text-slate-500 hover:text-white transition-all">
+            <X size={20} />
           </button>
         </div>
 
-        {/* Form */}
-        <form onSubmit={handleSubmit} className="p-6 space-y-6 max-h-[75vh] overflow-y-auto custom-scrollbar">
+        <form 
+          onSubmit={handleSubmit} 
+          className="flex-1 p-6 space-y-6 overflow-y-auto custom-scrollbar overscroll-contain [transform:translateZ(0)]"
+        >
 
           {/* Name */}
           <div>
@@ -514,7 +543,7 @@ export default function ProductModal({ isOpen, onClose, product = null, onSucces
         </form>
 
         {/* Footer */}
-        <div className="px-6 py-4 border-t border-white/[0.06] bg-white/[0.02] flex justify-end gap-3">
+        <div className="px-6 py-4 border-t border-white/[0.06] bg-white/[0.02] flex justify-end gap-3 flex-shrink-0">
           <button type="button" onClick={onClose}
             className="px-5 py-2.5 rounded-xl text-sm font-bold text-slate-400 hover:text-white hover:bg-white/5 transition-all">
             Cancel

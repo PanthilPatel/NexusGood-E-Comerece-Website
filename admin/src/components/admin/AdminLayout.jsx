@@ -144,10 +144,10 @@ export default function AdminLayout() {
   };
 
   return (
-    <div className="min-h-screen bg-[#030712] flex">
+    <div className={`min-h-screen bg-[#030712] flex ${collapsed ? 'sidebar-collapsed' : 'sidebar-expanded'}`} style={{ '--sidebar-width': collapsed ? '5rem' : '18rem' }}>
 
       {/* Sidebar */}
-      <aside className={`fixed lg:static inset-y-0 left-0 z-[110] bg-[#0f172a] border-r border-white/[0.06] flex flex-col transition-all duration-300 ${collapsed ? 'w-20' : 'w-72'}`}>
+      <aside className={`fixed lg:static inset-y-0 left-0 z-[600] bg-[#0f172a] border-r border-white/[0.06] flex flex-col transition-all duration-300 ${collapsed ? 'w-20' : 'w-72'}`}>
         {/* Logo */}
         <div className={`p-6 mb-4 flex items-center ${collapsed ? 'justify-center' : 'justify-between'}`}>
           {!collapsed && (
@@ -217,7 +217,7 @@ export default function AdminLayout() {
       </aside>
 
       {/* Main */}
-      <main className="flex-1 flex flex-col min-w-0 h-screen overflow-y-auto">
+      <main className="flex-1 flex flex-col min-w-0 h-screen overflow-hidden relative">
 
         {/* Header */}
         <header className="h-16 bg-[#0f172a]/80 backdrop-blur-md border-b border-white/[0.06] flex items-center justify-between px-6 sticky top-0 z-50">
@@ -326,7 +326,7 @@ export default function AdminLayout() {
         </header>
 
         {/* Page content */}
-        <div className="p-8 max-w-[1600px] mx-auto w-full">
+        <div className="flex-1 relative overflow-hidden">
           <Outlet />
         </div>
       </main>

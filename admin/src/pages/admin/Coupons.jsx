@@ -37,6 +37,8 @@ export default function AdminCoupons() {
 
   useEffect(() => { fetchCoupons(); }, []);
 
+
+
   const openCreate = () => { setForm(EMPTY_FORM); setModal('create'); };
   const openEdit = (c) => {
     setForm({
@@ -103,6 +105,17 @@ export default function AdminCoupons() {
     toast.success(`Copied "${code}"`);
   };
 
+  useEffect(() => {
+    if (modal) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, [modal]);
+
   const filtered = coupons.filter(c =>
     c.code.toLowerCase().includes(search.toLowerCase())
   );
@@ -118,181 +131,132 @@ export default function AdminCoupons() {
   );
 
   return (
-    <>
-    <div className="space-y-8 animate-fade-in">
+    <div className="h-full flex flex-col relative overflow-hidden">
+       <div className={`flex-1 overflow-y-auto custom-scrollbar p-8 transition-all duration-200 ${modal ? 'blur-sm pointer-events-none select-none' : ''}`}>
+        <div className="max-w-7xl mx-auto space-y-8 animate-fade-in">
 
-      {/* Header */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-        <div>
-          <h1 className="text-4xl font-outfit font-bold text-white tracking-tight">Promotions</h1>
-          <p className="text-sm text-slate-500 mt-1">Manage coupon codes and discount campaigns.</p>
-        </div>
-        <button onClick={openCreate}
-          className="flex items-center gap-2 px-5 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-bold rounded-xl transition-all shadow-lg shadow-indigo-600/20">
-          <Plus size={16} /> New Coupon
-        </button>
-      </div>
-
-      {/* Stats row */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        {[
-          { label: 'Total Coupons', value: coupons.length, color: 'text-white' },
-          { label: 'Active', value: coupons.filter(c => c.isActive && !isExpired(c.expiresAt)).length, color: 'text-emerald-400' },
-          { label: 'Expired', value: coupons.filter(c => isExpired(c.expiresAt)).length, color: 'text-rose-400' },
-          { label: 'Total Uses', value: coupons.reduce((s, c) => s + (c.usedCount || 0), 0), color: 'text-indigo-400' },
-        ].map(s => (
-          <div key={s.label} className="bg-[#0f172a] border border-white/[0.07] rounded-2xl px-5 py-4">
-            <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">{s.label}</p>
-            <p className={`text-2xl font-bold mt-1 ${s.color}`}>{s.value}</p>
+          {/* Header */}
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+            <div>
+              <h1 className="text-4xl font-outfit font-bold text-white tracking-tight">Promotions</h1>
+              <p className="text-sm text-slate-500 mt-1">Manage coupon codes and discount campaigns.</p>
+            </div>
+            <button onClick={openCreate}
+              className="flex items-center gap-2 px-5 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-bold rounded-xl transition-all shadow-lg shadow-indigo-600/20">
+              <Plus size={16} /> New Coupon
+            </button>
           </div>
-        ))}
-      </div>
 
-      {/* Search */}
-      <div className="relative">
-        <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500" />
-        <input value={search} onChange={e => setSearch(e.target.value)}
-          placeholder="Search by coupon code..."
-          className="w-full md:w-80 bg-[#0f172a] border border-white/[0.07] rounded-xl pl-10 pr-4 py-2.5 text-sm text-white placeholder:text-slate-500 focus:outline-none focus:border-indigo-500/50 transition-all" />
-      </div>
-
-      {/* Table */}
-      <div className="bg-[#0f172a] border border-white/[0.07] rounded-2xl overflow-hidden">
-        {loading ? (
-          <div className="p-12 text-center">
-            <div className="w-8 h-8 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin mx-auto" />
+          {/* Stats row */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            {[
+              { label: 'Total Coupons', value: coupons.length, color: 'text-white' },
+              { label: 'Active', value: coupons.filter(c => c.isActive && !isExpired(c.expiresAt)).length, color: 'text-emerald-400' },
+              { label: 'Expired', value: coupons.filter(c => isExpired(c.expiresAt)).length, color: 'text-rose-400' },
+              { label: 'Total Uses', value: coupons.reduce((s, c) => s + (c.usedCount || 0), 0), color: 'text-indigo-400' },
+            ].map(s => (
+              <div key={s.label} className="bg-[#0f172a] border border-white/[0.07] rounded-2xl px-5 py-4">
+                <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">{s.label}</p>
+                <p className={`text-2xl font-bold mt-1 ${s.color}`}>{s.value}</p>
+              </div>
+            ))}
           </div>
-        ) : filtered.length === 0 ? (
-          <div className="p-16 text-center space-y-4">
-            <Ticket size={40} className="text-slate-700 mx-auto" />
-            <p className="text-slate-500 font-medium">{search ? 'No coupons match your search.' : 'No coupons yet. Create your first one!'}</p>
+
+          {/* Search */}
+          <div className="relative">
+            <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500" />
+            <input value={search} onChange={e => setSearch(e.target.value)}
+              placeholder="Search by coupon code..."
+              className="w-full md:w-80 bg-[#0f172a] border border-white/[0.07] rounded-xl pl-10 pr-4 py-2.5 text-sm text-white placeholder:text-slate-500 focus:outline-none focus:border-indigo-500/50 transition-all" />
           </div>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="bg-white/[0.02] border-b border-white/[0.06] text-left">
-                  {['Code', 'Discount', 'Min Order', 'Usage', 'Expires', 'Status', 'Actions'].map(h => (
-                    <th key={h} className="px-6 py-4 text-[10px] font-bold text-slate-500 uppercase tracking-widest whitespace-nowrap">{h}</th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-white/[0.04]">
-                {filtered.map(c => {
-                  const expired = isExpired(c.expiresAt);
-                  const active = c.isActive && !expired;
-                  const usagePct = c.usageLimit > 0 ? Math.min(100, Math.round((c.usedCount / c.usageLimit) * 100)) : null;
 
-                  return (
-                    <tr key={c._id} className="hover:bg-white/[0.02] transition-colors group">
-                      {/* Code */}
-                      <td className="px-6 py-4">
-                        <div className="flex items-center gap-2">
-                          <div className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 ${c.discountType === 'percentage' ? 'bg-indigo-500/15 text-indigo-400' : 'bg-emerald-500/15 text-emerald-400'}`}>
-                            {c.discountType === 'percentage' ? <Percent size={14} /> : <Tag size={14} />}
-                          </div>
-                          <div>
-                            <div className="flex items-center gap-1.5">
-                              <span className="font-mono font-bold text-white tracking-wider">{c.code}</span>
-                              <button onClick={() => copyCode(c.code)} className="opacity-0 group-hover:opacity-100 p-0.5 text-slate-500 hover:text-white transition-all">
-                                <Copy size={11} />
-                              </button>
-                            </div>
-                          </div>
-                        </div>
-                      </td>
-
-                      {/* Discount */}
-                      <td className="px-6 py-4">
-                        <span className="font-bold text-white">
-                          {c.discountType === 'percentage' ? `${c.discountValue}%` : `₹${c.discountValue}`} OFF
-                        </span>
-                        {c.maxDiscount > 0 && c.discountType === 'percentage' && (
-                          <p className="text-[11px] text-slate-500 mt-0.5">Max ₹{c.maxDiscount}</p>
-                        )}
-                      </td>
-
-                      {/* Min Order */}
-                      <td className="px-6 py-4 text-slate-300">
-                        {c.minOrderAmount > 0 ? `₹${c.minOrderAmount}` : <span className="text-slate-600">None</span>}
-                      </td>
-
-                      {/* Usage */}
-                      <td className="px-6 py-4">
-                        <div className="flex items-center gap-2">
-                          <Users size={12} className="text-slate-500" />
-                          <span className="text-slate-300">
-                            {c.usedCount}{c.usageLimit > 0 ? ` / ${c.usageLimit}` : ''}
-                          </span>
-                        </div>
-                        {usagePct !== null && (
-                          <div className="mt-1.5 w-20 h-1 bg-white/10 rounded-full overflow-hidden">
-                            <div className={`h-full rounded-full ${usagePct >= 90 ? 'bg-rose-500' : 'bg-indigo-500'}`} style={{ width: `${usagePct}%` }} />
-                          </div>
-                        )}
-                      </td>
-
-                      {/* Expires */}
-                      <td className="px-6 py-4">
-                        <div className="flex items-center gap-1.5">
-                          <Calendar size={12} className={expired ? 'text-rose-400' : 'text-slate-500'} />
-                          <span className={`text-xs font-medium ${expired ? 'text-rose-400' : 'text-slate-300'}`}>
-                            {new Date(c.expiresAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
-                          </span>
-                        </div>
-                        {expired && <p className="text-[10px] text-rose-400 font-bold mt-0.5">EXPIRED</p>}
-                      </td>
-
-                      {/* Status */}
-                      <td className="px-6 py-4">
-                        <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wide border ${
-                          active
-                            ? 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30'
-                            : expired
-                            ? 'bg-slate-500/15 text-slate-500 border-slate-500/20'
-                            : 'bg-rose-500/15 text-rose-400 border-rose-500/30'
-                        }`}>
-                          {active ? <CheckCircle size={10} /> : <XCircle size={10} />}
-                          {expired ? 'Expired' : active ? 'Active' : 'Disabled'}
-                        </span>
-                      </td>
-
-                      {/* Actions */}
-                      <td className="px-6 py-4">
-                        <div className="flex items-center gap-1">
-                          {/* Toggle active */}
-                          <button onClick={() => handleToggle(c._id)}
-                            title={c.isActive ? 'Deactivate' : 'Activate'}
-                            className={`p-2 rounded-lg transition-all ${c.isActive ? 'text-emerald-400 hover:bg-emerald-500/10' : 'text-slate-500 hover:bg-white/5 hover:text-white'}`}>
-                            {c.isActive ? <ToggleRight size={18} /> : <ToggleLeft size={18} />}
-                          </button>
-                          {/* Edit */}
-                          <button onClick={() => openEdit(c)}
-                            className="p-2 text-slate-500 hover:text-indigo-400 hover:bg-indigo-500/10 rounded-lg transition-all">
-                            <Edit3 size={15} />
-                          </button>
-                          {/* Delete */}
-                          <button onClick={() => handleDelete(c._id)}
-                            className="p-2 text-slate-500 hover:text-rose-400 hover:bg-rose-500/10 rounded-lg transition-all">
-                            <Trash2 size={15} />
-                          </button>
-                        </div>
-                      </td>
+          {/* Table */}
+          <div className="bg-[#0f172a] border border-white/[0.07] rounded-2xl overflow-hidden">
+            {loading ? (
+              <div className="p-12 text-center">
+                <div className="w-8 h-8 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin mx-auto" />
+              </div>
+            ) : filtered.length === 0 ? (
+              <div className="p-16 text-center space-y-4">
+                <Ticket size={40} className="text-slate-700 mx-auto" />
+                <p className="text-slate-500 font-medium">{search ? 'No coupons match your search.' : 'No coupons yet. Create your first one!'}</p>
+              </div>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="bg-white/[0.02] border-b border-white/[0.06] text-left">
+                      {['Code', 'Discount', 'Min Order', 'Usage', 'Expires', 'Status', 'Actions'].map(h => (
+                        <th key={h} className="px-6 py-4 text-[10px] font-bold text-slate-500 uppercase tracking-widest whitespace-nowrap">{h}</th>
+                      ))}
                     </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </div>
-    </div>
+                  </thead>
+                  <tbody className="divide-y divide-white/[0.04]">
+                    {filtered.map(c => {
+                      const expired = isExpired(c.expiresAt);
+                      const active = c.isActive && !expired;
+                      const usagePct = c.usageLimit > 0 ? Math.min(100, Math.round((c.usedCount / c.usageLimit) * 100)) : null;
 
-    {/* Create / Edit Modal */}
+                      return (
+                        <tr key={c._id} className="hover:bg-white/[0.02] transition-colors group">
+                          <td className="px-6 py-4">
+                            <div className="flex items-center gap-2">
+                              <div className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 ${c.discountType === 'percentage' ? 'bg-indigo-500/15 text-indigo-400' : 'bg-emerald-500/15 text-emerald-400'}`}>
+                                {c.discountType === 'percentage' ? <Percent size={14} /> : <Tag size={14} />}
+                              </div>
+                              <span className="font-mono font-bold text-white tracking-wider">{c.code}</span>
+                            </div>
+                          </td>
+                          <td className="px-6 py-4 font-bold text-white">
+                            {c.discountType === 'percentage' ? `${c.discountValue}%` : `₹${c.discountValue}`} OFF
+                          </td>
+                          <td className="px-6 py-4 text-slate-300">
+                            {c.minOrderAmount > 0 ? `₹${c.minOrderAmount}` : 'None'}
+                          </td>
+                          <td className="px-6 py-4 text-slate-300">
+                            {c.usedCount}{c.usageLimit > 0 ? ` / ${c.usageLimit}` : ''}
+                          </td>
+                          <td className="px-6 py-4 text-xs font-medium text-slate-300">
+                            {new Date(c.expiresAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}
+                          </td>
+                          <td className="px-6 py-4">
+                            <span className={`px-2 py-1 rounded-full text-[10px] font-bold uppercase ${active ? 'bg-emerald-500/15 text-emerald-400' : 'bg-rose-500/15 text-rose-400'}`}>
+                              {active ? 'Active' : 'Inactive'}
+                            </span>
+                          </td>
+                          <td className="px-6 py-4 text-right">
+                            <div className="flex gap-1 justify-end">
+                              <button onClick={() => openEdit(c)} className="p-2 text-slate-500 hover:text-white"><Edit3 size={14}/></button>
+                              <button onClick={() => handleDelete(c._id)} className="p-2 text-slate-500 hover:text-rose-400"><Trash2 size={14}/></button>
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+        </div>
+       </div>
+
+    {/* ── MODAL OVERLAY — Global Viewport Overlay ── */}
     {modal && (
-      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-        <div className="bg-[#0f172a] border border-white/10 rounded-3xl p-8 w-full max-w-lg shadow-2xl space-y-6 max-h-[90vh] overflow-y-auto">
-          <div className="flex justify-between items-center">
+      <div 
+        className="fixed top-0 right-0 bottom-0 z-[500] flex items-center justify-center bg-black/60 backdrop-blur-sm transition-all duration-300"
+        style={{ 
+          left: 'var(--sidebar-width, 18rem)',
+          width: 'calc(100vw - var(--sidebar-width, 18rem))'
+        }}
+      >
+        {/* Click-to-close overlay */}
+        <div className="absolute inset-0" onClick={() => setModal(null)} />
+        
+        {/* Modal Card - Strictly Centered */}
+        <div className="relative w-full max-w-lg m-0 p-0 shadow-2xl overflow-hidden flex flex-col max-h-[85vh] transition-all duration-300 bg-[#0f172a] border border-white/10 rounded-3xl">
+          {/* Fixed Header */}
+          <div className="flex justify-between items-center p-8 pb-4 border-b border-white/5 bg-white/[0.02] flex-shrink-0">
             <div>
               <h2 className="text-xl font-bold text-white">{modal === 'create' ? 'New Coupon' : 'Edit Coupon'}</h2>
               <p className="text-xs text-slate-500 mt-0.5">{modal === 'create' ? 'Create a new discount code' : `Editing ${form.code}`}</p>
@@ -302,7 +266,7 @@ export default function AdminCoupons() {
             </button>
           </div>
 
-          <form onSubmit={handleSave} className="space-y-4">
+          <form onSubmit={handleSave} className="flex-1 p-8 space-y-6 overflow-y-auto custom-scrollbar overscroll-contain [transform:translateZ(0)]">
             {/* Code */}
             <div>
               <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest block mb-1.5">Coupon Code *</label>
@@ -378,20 +342,22 @@ export default function AdminCoupons() {
               </div>
             )}
 
-            <div className="flex gap-3 pt-1">
-              <button type="button" onClick={() => setModal(null)}
-                className="flex-1 py-2.5 rounded-xl border border-white/10 text-sm font-bold text-slate-400 hover:text-white hover:bg-white/5 transition-all">
-                Cancel
-              </button>
-              <button type="submit" disabled={saving}
-                className="flex-1 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-sm font-bold text-white transition-all disabled:opacity-50">
-                {saving ? 'Saving...' : modal === 'create' ? 'Create Coupon' : 'Save Changes'}
-              </button>
-            </div>
           </form>
+
+          {/* Fixed Footer */}
+          <div className="p-8 border-t border-white/5 bg-white/[0.02] flex gap-3 flex-shrink-0">
+            <button type="button" onClick={() => setModal(null)}
+              className="flex-1 py-2.5 rounded-xl border border-white/10 text-sm font-bold text-slate-400 hover:text-white hover:bg-white/5 transition-all">
+              Cancel
+            </button>
+            <button type="submit" onClick={handleSave} disabled={saving}
+              className="flex-1 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-sm font-bold text-white transition-all disabled:opacity-50">
+              {saving ? 'Saving...' : modal === 'create' ? 'Create Coupon' : 'Save Changes'}
+            </button>
+          </div>
         </div>
       </div>
     )}
-    </>
-  );
+    </div>
+   );
 }

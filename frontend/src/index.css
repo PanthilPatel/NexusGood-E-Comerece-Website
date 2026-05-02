@@ -25,6 +25,18 @@
   --text-main: #cbd5e1;
   /* slate-300 */
   --text-heading: #ffffff;
+  
+  /* Sidebar dynamic width */
+  --sidebar-width: 0px;
+}
+
+.sidebar-expanded { --sidebar-width: 18rem; }
+.sidebar-collapsed { --sidebar-width: 5rem; }
+
+@media (max-width: 1024px) {
+  .sidebar-expanded, .sidebar-collapsed { 
+    --sidebar-width: 0px !important; 
+  }
 }
 
 .light {

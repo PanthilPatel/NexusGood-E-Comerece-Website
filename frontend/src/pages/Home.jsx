@@ -3,10 +3,14 @@ import { Link } from 'react-router-dom';
 import { ShoppingBag, ArrowRight, Zap, ShieldCheck, Globe, Star, ChevronRight, Package } from 'lucide-react';
 import FlashSales from '../components/home/FlashSales';
 import api from '../services/api';
+import useAuthStore from '../store/authStore';
+
 
 export default function Home() {
+  const { isAuthenticated } = useAuthStore();
   const [featured, setFeatured] = useState(null);
   const [loading, setLoading] = useState(true);
+
 
   useEffect(() => {
     const fetchFeatured = async () => {
@@ -147,11 +151,18 @@ export default function Home() {
             <p className="text-xl text-indigo-100/70 font-light max-w-2xl mx-auto leading-relaxed">
                Join 48,000+ visionaries who have already synchronized their workspace with NexusGood artifacts.
             </p>
-            <div className="flex flex-col sm:flex-row justify-center gap-6 pt-4">
-               <Link to="/register" className="bg-white text-indigo-900 py-5 px-12 rounded-2xl font-bold uppercase tracking-widest shadow-2xl hover:bg-slate-100 transition-all">
-                  Join the Circle
-               </Link>
+             <div className="flex flex-col sm:flex-row justify-center gap-6 pt-4">
+               {isAuthenticated ? (
+                 <Link to="/profile" className="bg-white text-indigo-900 py-5 px-12 rounded-2xl font-bold uppercase tracking-widest shadow-2xl hover:bg-slate-100 transition-all">
+                    View Profile
+                 </Link>
+               ) : (
+                 <Link to="/register" className="bg-white text-indigo-900 py-5 px-12 rounded-2xl font-bold uppercase tracking-widest shadow-2xl hover:bg-slate-100 transition-all">
+                    Join the Circle
+                 </Link>
+               )}
                <Link to="/products" className="py-5 px-12 border border-white/20 rounded-2xl font-bold text-white uppercase tracking-widest hover:bg-white/10 transition-all backdrop-blur-md">
+
                   Browse Registry
                </Link>
             </div>

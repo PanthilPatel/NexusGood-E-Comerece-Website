@@ -3,9 +3,10 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { 
   ShoppingBag, Heart, Share2, ShieldCheck, 
   Truck, RotateCcw, Star, ChevronRight,
-  Plus, Minus, CheckCircle2, Zap
+  Plus, Minus, CheckCircle2, Zap, X
 } from 'lucide-react';
 import useCartStore from '../store/cartStore';
+import useWishlistStore from '../store/wishlistStore';
 import api from '../services/api';
 import toast from 'react-hot-toast';
 import Skeleton from '../components/ui/Skeleton';
@@ -14,11 +15,18 @@ export default function ProductDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
   const { addToCart } = useCartStore();
+  const { toggleWishlist, isInWishlist } = useWishlistStore();
+  
+  const isFavorited = isInWishlist(id);
   
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
   const [quantity, setQuantity] = useState(1);
   const [activeImage, setActiveImage] = useState(0);
+  const [showReviewModal, setShowReviewModal] = useState(false);
+  const [reviewForm, setReviewForm] = useState({ rating: 5, comment: '' });
+  const [submittingReview, setSubmittingReview] = useState(false);
+
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -60,6 +68,34 @@ export default function ProductDetail() {
       navigate('/checkout');
     }
   };
+
+  const handleToggleWishlist = async () => {
+    try {
+      const res = await toggleWishlist(product._id);
+      toast.success(res.message || 'Wishlist updated');
+    } catch (error) {
+      toast.error('Sign in to favorite items');
+    }
+  };
+
+  const handleSubmitReview = async (e) => {
+    e.preventDefault();
+    setSubmittingReview(true);
+    try {
+      const res = await api.post(`/reviews/${id}`, reviewForm);
+      if (res.data.success) {
+        toast.success('Feedback synchronized successfully.');
+        setShowReviewModal(false);
+        setReviewForm({ rating: 5, comment: '' });
+        // Refresh product to show new review if approved immediately (or just for UI)
+      }
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Feedback transmission failed.');
+    } finally {
+      setSubmittingReview(false);
+    }
+  };
+
 
   if (loading) {
     return (
@@ -223,9 +259,16 @@ export default function ProductDetail() {
                    >
                       <ShoppingBag size={18} /> Add to Sanctuary
                    </button>
-                   <button className="p-4 bg-white/5 hover:bg-white/10 border border-white/10 rounded-2xl text-white transition-all">
-                      <Heart size={20} />
-                   </button>
+                    <button 
+                      onClick={handleToggleWishlist}
+                      className={`p-4 rounded-2xl transition-all border ${
+                        isFavorited 
+                        ? 'bg-rose-500 border-rose-400 text-white shadow-lg shadow-rose-500/20' 
+                        : 'bg-white/5 hover:bg-white/10 border-white/10 text-white'
+                      }`}
+                    >
+                       <Heart size={20} fill={isFavorited ? 'currentColor' : 'none'} />
+                    </button>
                 </div>
              </div>
 
@@ -244,8 +287,166 @@ export default function ProductDetail() {
                 ))}
              </div>
           </div>
-        </div>
       </div>
+
+      {/* Reviews Section */}
+      <section className="max-w-7xl mx-auto px-6 py-24 border-t border-white/5">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-16">
+          
+          {/* Review Stats */}
+          <div className="lg:col-span-4 space-y-8">
+            <div className="space-y-2">
+              <h3 className="text-3xl font-bold text-white tracking-tight">Customer Feedback</h3>
+              <p className="text-xs text-slate-500 font-bold uppercase tracking-widest">Aggregate sentiment from the community</p>
+            </div>
+
+            <div className="p-8 glass-card bg-primary/5 border-primary/10 flex flex-col items-center text-center space-y-4">
+              <p className="text-6xl font-bold text-white">{product.avgRating?.toFixed(1) || '0.0'}</p>
+              <div className="flex gap-1.5 text-amber-400">
+                {[1, 2, 3, 4, 5].map(s => (
+                  <Star key={s} size={20} fill={s <= Math.round(product.avgRating) ? 'currentColor' : 'none'} />
+                ))}
+              </div>
+              <p className="text-[10px] text-slate-500 font-bold uppercase tracking-[0.2em]">Based on {product.numReviews || 0} Synchronized Reviews</p>
+            </div>
+
+            <div className="space-y-4">
+               {[5, 4, 3, 2, 1].map(star => (
+                 <div key={star} className="flex items-center gap-4 group cursor-help">
+                    <span className="text-[10px] font-bold text-slate-500 w-4">{star}</span>
+                    <Star size={12} className="text-amber-400 fill-amber-400" />
+                    <div className="flex-1 h-1.5 bg-white/5 rounded-full overflow-hidden">
+                       <div 
+                        className="h-full bg-primary transition-all duration-1000" 
+                        style={{ width: `${(product.reviews?.filter(r => r.rating === star).length / (product.numReviews || 1)) * 100}%` }}
+                       />
+                    </div>
+                    <span className="text-[10px] font-bold text-slate-600 w-8 text-right group-hover:text-slate-400 transition-colors">
+                      {Math.round((product.reviews?.filter(r => r.rating === star).length / (product.numReviews || 1)) * 100)}%
+                    </span>
+                 </div>
+               ))}
+            </div>
+          </div>
+
+          {/* Review List & Submission */}
+          <div className="lg:col-span-8 space-y-12">
+             <div className="flex items-center justify-between">
+                <h4 className="text-lg font-bold text-white uppercase tracking-widest">Protocol Ledger</h4>
+                <button 
+                  onClick={() => setShowReviewModal(true)}
+                  className="text-[10px] font-bold text-primary hover:text-primary-light transition-colors uppercase tracking-[0.2em] border-b border-primary/30 pb-1"
+                >
+                  Submit Feedback
+                </button>
+             </div>
+
+
+             <div className="space-y-8">
+                {product.reviews?.length > 0 ? product.reviews.map((review, i) => (
+                  <div key={i} className="p-8 bg-white/[0.02] border border-white/5 rounded-3xl space-y-6 hover:bg-white/[0.03] transition-all group">
+                     <div className="flex justify-between items-start">
+                        <div className="flex items-center gap-4">
+                           <div className="w-12 h-12 bg-gradient-to-br from-primary to-primary-dark rounded-2xl flex items-center justify-center text-white font-bold shadow-lg shadow-primary/20">
+                              {review.name?.charAt(0) || 'U'}
+                           </div>
+                           <div>
+                              <p className="font-bold text-white">{review.name || 'Anonymous User'}</p>
+                              <div className="flex items-center gap-2">
+                                 <div className="flex gap-0.5 text-amber-400">
+                                    {[1, 2, 3, 4, 5].map(s => <Star key={s} size={10} fill={s <= review.rating ? 'currentColor' : 'none'} />)}
+                                 </div>
+                                 <span className="text-[10px] text-slate-500 font-medium">· {new Date(review.createdAt).toLocaleDateString()}</span>
+                              </div>
+                           </div>
+                        </div>
+                        <div className="px-3 py-1 bg-emerald-500/10 border border-emerald-500/20 rounded-full flex items-center gap-1.5">
+                           <CheckCircle2 size={10} className="text-emerald-500" />
+                           <span className="text-[8px] font-bold text-emerald-500 uppercase tracking-widest">Verified Purchase</span>
+                        </div>
+                     </div>
+                     <p className="text-sm text-slate-400 leading-relaxed font-light italic">
+                        "{review.comment}"
+                     </p>
+                  </div>
+                )) : (
+                  <div className="py-20 flex flex-col items-center justify-center gap-4 text-slate-600 border-2 border-dashed border-white/5 rounded-[3rem]">
+                     <Star size={40} className="opacity-10" />
+                     <p className="text-[10px] font-bold uppercase tracking-[0.2em]">No feedback entries in the registry</p>
+                  </div>
+                )}
+             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Review Modal */}
+      {showReviewModal && (
+        <div className="fixed inset-0 z-[1000] flex items-center justify-center p-6">
+           <div className="absolute inset-0 bg-space-950/80 backdrop-blur-md" onClick={() => setShowReviewModal(false)} />
+           <div className="relative w-full max-w-lg glass-card p-12 space-y-10 animate-slide-up border-primary/20">
+              <button 
+                onClick={() => setShowReviewModal(false)}
+                className="absolute top-8 right-8 p-2 text-slate-500 hover:text-white transition-colors"
+              >
+                <X size={24} />
+              </button>
+              <div className="space-y-2">
+                 <h3 className="text-3xl font-bold text-white tracking-tight">Submit Feedback</h3>
+                 <p className="text-xs text-slate-500 font-bold uppercase tracking-widest">Contribute to the collective intelligence</p>
+              </div>
+
+              <form onSubmit={handleSubmitReview} className="space-y-8">
+                 <div className="space-y-4">
+                    <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">Artifact Rating</label>
+                    <div className="flex gap-4">
+                       {[1, 2, 3, 4, 5].map(star => (
+                         <button 
+                           key={star}
+                           type="button"
+                           onClick={() => setReviewForm({...reviewForm, rating: star})}
+                           className={`p-2 transition-all ${reviewForm.rating >= star ? 'text-amber-400 scale-110' : 'text-slate-700 hover:text-slate-500'}`}
+                         >
+                            <Star size={32} fill={reviewForm.rating >= star ? 'currentColor' : 'none'} />
+                         </button>
+                       ))}
+                    </div>
+                 </div>
+
+                 <div className="space-y-2">
+                    <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">Observation Log</label>
+                    <textarea 
+                      rows={5}
+                      required
+                      placeholder="Share your detailed analysis of this artifact..."
+                      className="w-full bg-white/[0.03] border border-white/10 rounded-2xl px-6 py-4 text-sm text-white focus:outline-none focus:border-primary/50 transition-all resize-none"
+                      value={reviewForm.comment}
+                      onChange={(e) => setReviewForm({...reviewForm, comment: e.target.value})}
+                    />
+                 </div>
+
+                 <div className="flex gap-4">
+                    <button 
+                      type="submit"
+                      disabled={submittingReview}
+                      className="flex-1 btn-primary py-4 text-xs uppercase tracking-widest font-bold flex items-center justify-center gap-2"
+                    >
+                       {submittingReview ? <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : 'Commit Feedback'}
+                    </button>
+                    <button 
+                      type="button"
+                      onClick={() => setShowReviewModal(false)}
+                      className="px-8 py-4 bg-white/5 border border-white/10 text-slate-500 hover:text-white rounded-2xl text-xs font-bold uppercase tracking-widest transition-all"
+                    >
+                       Abort
+                    </button>
+                 </div>
+              </form>
+           </div>
+        </div>
+      )}
     </div>
+  </div>
+
   );
 }

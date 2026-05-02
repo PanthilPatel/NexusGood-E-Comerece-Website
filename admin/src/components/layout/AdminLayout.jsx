@@ -4,7 +4,7 @@ import {
   LayoutDashboard, Package, ShoppingCart, 
   Users, BarChart2, Ticket, LogOut, 
   Menu, X, Bell, Search, Globe, ChevronRight,
-  Settings, HelpCircle, User, Shield, Plus
+  Settings, HelpCircle, User, Shield, Plus, BrainCircuit
 } from 'lucide-react';
 import useAuthStore from '../../store/authStore';
 import toast from 'react-hot-toast';
@@ -43,11 +43,13 @@ export default function AdminLayout() {
     ]},
     { group: 'Inventory & Logistics', items: [
       { label: 'Products', icon: Package, path: '/admin/products' },
+      { label: 'Inventory Intelligence', icon: BrainCircuit, path: '/admin/inventory' },
       { label: 'Orders', icon: ShoppingCart, path: '/admin/orders' },
       { label: 'Bulk Import', icon: Plus, path: '/admin/import' },
     ]},
     { group: 'Users & Marketing', items: [
       { label: 'Customers', icon: Users, path: '/admin/users' },
+      { label: 'Role Intelligence', icon: Shield, path: '/admin/roles' },
       { label: 'Promotions', icon: Ticket, path: '/admin/coupons' },
     ]},
     { group: 'Support & Moderation', items: [

@@ -15,9 +15,8 @@ export default function NotificationPanel({ onClose }) {
     const fetchNotifications = async () => {
       try {
         setLoading(true);
-        // Fetch low stock and recent orders in parallel
         const [lowStockRes, ordersRes] = await Promise.all([
-          api.get('/analytics/low-stock'),
+          api.get('/analytics/inventory'),
           api.get('/orders?limit=5')
         ]);
 

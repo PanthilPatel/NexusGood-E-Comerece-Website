@@ -294,6 +294,79 @@ exports.getSummary = async (req, res, next) => {
   }
 };
 
+// GET /api/analytics/predictions
+exports.getPredictions = async (req, res, next) => {
+  try {
+    const now = new Date();
+    const sixtyDaysAgo = new Date(now.getTime() - 60 * 24 * 60 * 60 * 1000);
+    const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+
+    // 1. Product Demand Prediction (Velocity-based)
+    const products = await Product.find({ isActive: true }).select('name price soldCount stock images category');
+    
+    // Simple Velocity Logic: (Sold / Total Age of product or just high soldCount)
+    const demandPredictions = products
+      .map(p => {
+        const velocity = p.soldCount / 5; // Simplified velocity score
+        const daysToStockout = velocity > 0 ? Math.round(p.stock / velocity) : 999;
+        return {
+          _id: p._id,
+          name: p.name,
+          stock: p.stock,
+          predictedDemand: Math.round(velocity * 30), // Predicted next 30 days
+          riskLevel: daysToStockout < 15 ? 'Critical' : daysToStockout < 30 ? 'High' : 'Stable',
+          image: p.images?.[0]?.url || ''
+        };
+      })
+      .sort((a, b) => b.predictedDemand - a.predictedDemand)
+      .slice(0, 5);
+
+    // 2. Churn Prediction (RFM based)
+    const atRiskCustomers = await User.aggregate([
+      { $match: { role: 'customer' } },
+      {
+        $lookup: {
+          from: 'orders',
+          localField: '_id',
+          foreignField: 'user',
+          as: 'orders'
+        }
+      },
+      {
+        $project: {
+          name: 1,
+          email: 1,
+          lastOrder: { $max: '$orders.createdAt' },
+          orderCount: { $size: '$orders' }
+        }
+      },
+      { 
+        $match: { 
+          $or: [
+            { lastOrder: { $lt: sixtyDaysAgo } },
+            { orderCount: 0 }
+          ]
+        } 
+      },
+      { $limit: 5 }
+    ]);
+
+    res.json({
+      success: true,
+      data: {
+        demandPredictions,
+        atRiskCustomers: atRiskCustomers.map(c => ({
+          ...c,
+          churnProbability: c.orderCount === 0 ? '90%' : '65%',
+          status: 'At Risk'
+        }))
+      }
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 // GET /api/analytics/inventory
 exports.getLowStock = async (req, res, next) => {
   try {

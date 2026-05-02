@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { 
-  DollarSign, ShoppingBag, Users, 
+  IndianRupee, ShoppingBag, Users, 
   TrendingUp, Activity, ArrowUpRight, 
   ArrowDownRight, Zap, Target, PieChart as PieIcon
 } from 'lucide-react';
@@ -13,9 +14,11 @@ import api from '../../services/api';
 import Skeleton from '../../components/ui/Skeleton';
 import useSettingsStore from '../../store/settingsStore';
 import toast from 'react-hot-toast';
+import { Package } from 'lucide-react';
 
 export default function AdminDashboard() {
   const [data, setData] = useState(null);
+  const [lowStock, setLowStock] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const { maintenanceMode, fetchMaintenanceStatus, setMaintenanceMode } = useSettingsStore();
@@ -25,19 +28,22 @@ export default function AdminDashboard() {
   }, [fetchMaintenanceStatus]);
 
   useEffect(() => {
-    const fetchOverview = async () => {
+    const fetchData = async () => {
       try {
         setLoading(true);
-        const res = await api.get('/analytics/overview');
-        // Handle both { success, data } and direct data shapes
-        setData(res.data?.data || res.data || null);
+        const [overviewRes, stockRes] = await Promise.all([
+          api.get('/analytics/overview'),
+          api.get('/analytics/inventory')
+        ]);
+        setData(overviewRes.data?.data || overviewRes.data || null);
+        setLowStock(stockRes.data?.lowStockProducts || []);
       } catch (err) {
         setError('Failed to sync metrics hub.');
       } finally {
         setLoading(false);
       }
     };
-    fetchOverview();
+    fetchData();
   }, []);
 
   const handleMaintenanceToggle = async (val) => {
@@ -96,7 +102,7 @@ export default function AdminDashboard() {
   }
 
   const kpis = [
-    { label: 'Net Revenue', value: `₹${data?.totalRevenue?.toLocaleString()}`, icon: DollarSign, color: 'text-indigo-400', bg: 'bg-indigo-500/10', change: '+14%', up: true },
+    { label: 'Net Revenue', value: `₹${data?.totalRevenue?.toLocaleString('en-IN')}`, icon: IndianRupee, color: 'text-indigo-400', bg: 'bg-indigo-500/10', change: '+14%', up: true },
     { label: 'Active Orders', value: data?.totalOrders, icon: ShoppingBag, color: 'text-rose-400', bg: 'bg-rose-500/10', change: '+8%', up: true },
     { label: 'Member Core', value: data?.totalUsers, icon: Users, color: 'text-emerald-400', bg: 'bg-emerald-500/10', change: '-2%', up: false },
     { label: 'Velocity', value: '88.4%', icon: Zap, color: 'text-amber-400', bg: 'bg-amber-500/10', change: '+1%', up: true },
@@ -105,9 +111,45 @@ export default function AdminDashboard() {
   return (
     <div className="space-y-12 animate-fade-in">
       
+      {/* Critical Stock Alerts */}
+      {lowStock.length > 0 && (
+        <div className="bg-rose-500/5 border border-rose-500/20 rounded-3xl p-6 flex items-center justify-between gap-6 animate-pulse">
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 bg-rose-500/10 rounded-2xl flex items-center justify-center text-rose-500">
+              <Package size={24} />
+            </div>
+            <div>
+              <h4 className="text-lg font-bold text-white">Stock Depletion Detected</h4>
+              <p className="text-sm text-rose-400 font-medium">{lowStock.length} products have dropped below critical thresholds.</p>
+            </div>
+          </div>
+          <Link to="/admin/products" className="px-6 py-2.5 bg-rose-600 hover:bg-rose-500 text-white rounded-xl text-sm font-bold transition-all shadow-lg shadow-rose-600/20">
+            Fix Inventory
+          </Link>
+        </div>
+      )}
+
       {/* KPI Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {kpis.map((kpi, i) => (
+        <Link to="/admin/analytics" className="group/stat bg-[#0f172a] border border-white/[0.07] rounded-3xl p-6 hover:border-indigo-500/50 transition-all shadow-xl">
+          <div className="flex justify-between items-start mb-6">
+            <div className="p-3 bg-indigo-500/10 text-indigo-400 rounded-2xl group-hover/stat:bg-indigo-600 group-hover/stat:text-white transition-all">
+              <IndianRupee size={24} />
+            </div>
+            <div className="text-[10px] font-bold text-indigo-400 bg-indigo-500/10 px-2 py-1 rounded-full uppercase tracking-widest border border-indigo-500/20">
+              View Analytics
+            </div>
+          </div>
+          <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Net Revenue</p>
+          <h3 className="text-3xl font-bold text-white mt-1 tracking-tight font-outfit">
+            ₹{data?.totalRevenue?.toLocaleString('en-IN') || '0'}
+          </h3>
+          <p className="text-xs text-slate-500 mt-2 flex items-center gap-1.5">
+            <TrendingUp size={14} className="text-emerald-400" />
+            <span className="text-emerald-400 font-bold">+14%</span> vs last month
+          </p>
+        </Link>
+        {kpis.slice(1).map((kpi, i) => (
           <div key={i} className="glass-card p-8 space-y-8 hover:border-white/20 hover:scale-[1.02] transition-all">
              <div className="flex justify-between items-start">
                 <div className={`w-14 h-14 ${kpi.bg} ${kpi.color} rounded-2xl flex items-center justify-center shadow-inner`}>

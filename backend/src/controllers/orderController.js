@@ -56,10 +56,13 @@ exports.checkout = async (req, res, next) => {
 
       // Calculate realized profit snapshot
       let profit = 0;
-      if (item.product.profitType === 'percentage') {
-        profit = (price * (item.product.profitValue || 0)) / 100;
+      if (item.product.profitType === 'percentage' && item.product.profitValue > 0) {
+        profit = (price * item.product.profitValue) / 100;
+      } else if (item.product.profitType === 'flat' && item.product.profitValue > 0) {
+        profit = item.product.profitValue;
       } else {
-        profit = item.product.profitValue || 0;
+        // Fallback: 20% margin if profit not explicitly defined
+        profit = price * 0.20;
       }
 
       orderItems.push({
@@ -322,7 +325,7 @@ exports.getRecentPurchases = async (req, res, next) => {
     const formattedOrders = orders.map(order => ({
       city: order.shippingAddress?.city || 'India',
       productName: order.items[0]?.product?.name || 'a premium item',
-      productImage: order.items[0]?.product?.images?.[0] || '',
+      productImage: order.items[0]?.product?.images?.[0]?.url || '',
       timeAgo: order.createdAt,
     }));
 

@@ -44,7 +44,7 @@ export default function AIStylist() {
   };
 
   return (
-    <div className="fixed bottom-6 right-6 z-[100] flex flex-col items-end">
+    <div id="ai-stylist-container" className="fixed bottom-6 right-6 z-[100] flex flex-col items-end">
       
       {/* Chat Window */}
       {isOpen && (
@@ -137,15 +137,29 @@ export default function AIStylist() {
 
       {/* Toggle Button */}
       {!isOpen && (
-        <button 
-          onClick={() => setIsOpen(true)}
-          className="group relative w-16 h-16 bg-primary hover:bg-primary-light text-white rounded-[1.5rem] flex items-center justify-center shadow-2xl shadow-primary/40 transition-all active:scale-95"
-        >
-           <Sparkles size={28} className="group-hover:rotate-12 transition-transform" />
-           <div className="absolute -top-2 -right-2 px-2 py-1 bg-emerald-500 text-[8px] font-black uppercase tracking-widest rounded-lg shadow-lg border-2 border-[#030712]">
-              Online
-           </div>
-        </button>
+        <div className="group relative">
+          <button 
+            onClick={() => setIsOpen(true)}
+            className="w-16 h-16 bg-primary hover:bg-primary-light text-white rounded-[1.5rem] flex items-center justify-center shadow-2xl shadow-primary/40 transition-all active:scale-95"
+          >
+             <Sparkles size={28} className="group-hover:rotate-12 transition-transform" />
+             <div className="absolute -top-2 -right-2 px-2 py-1 bg-emerald-500 text-[8px] font-black uppercase tracking-widest rounded-lg shadow-lg border-2 border-[#030712]">
+                Online
+             </div>
+          </button>
+          {/* Close Launcher Button */}
+          <button 
+            onClick={(e) => {
+              e.stopPropagation();
+              const el = document.getElementById('ai-stylist-container');
+              if (el) el.style.display = 'none';
+            }}
+            className="absolute -top-1 -right-1 w-6 h-6 bg-slate-800 text-slate-400 hover:text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all border border-white/10 shadow-xl z-20"
+            title="Hide Assistant"
+          >
+            <X size={12} />
+          </button>
+        </div>
       )}
 
     </div>

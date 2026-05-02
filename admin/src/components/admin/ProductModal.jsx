@@ -33,6 +33,7 @@ export default function ProductModal({ isOpen, onClose, product = null, onSucces
   const [formData, setFormData] = useState(EMPTY_FORM);
   const [categories, setCategories] = useState([]);
   const [files, setFiles] = useState([]);
+  const [imagesToRemove, setImagesToRemove] = useState([]);
   const [colorInput, setColorInput] = useState({ name: '', hex: '#6366f1' });
 
   useEffect(() => {
@@ -61,6 +62,7 @@ export default function ProductModal({ isOpen, onClose, product = null, onSucces
     } else {
       setFormData(EMPTY_FORM);
       setFiles([]);
+      setImagesToRemove([]);
     }
   }, [isOpen, product]);
 
@@ -111,6 +113,7 @@ export default function ProductModal({ isOpen, onClose, product = null, onSucces
         else fd.append(k, v);
       });
       files.forEach(f => fd.append('images', f));
+      imagesToRemove.forEach(id => fd.append('removeImages', id));
 
       if (product) {
         await api.put(`/products/${product._id}`, fd, { headers: { 'Content-Type': 'multipart/form-data' } });
@@ -126,6 +129,14 @@ export default function ProductModal({ isOpen, onClose, product = null, onSucces
     } finally {
       setLoading(false);
     }
+  };
+  
+  const handleRemoveExisting = (publicId) => {
+    setImagesToRemove(prev => [...prev, publicId]);
+  };
+
+  const handleRemoveNew = (index) => {
+    setFiles(prev => prev.filter((_, i) => i !== index));
   };
 
   if (!isOpen) return null;
@@ -429,22 +440,66 @@ export default function ProductModal({ isOpen, onClose, product = null, onSucces
           </div>
 
           {/* Images */}
-          <div>
+          <div className="space-y-4">
             <label className={labelCls}><Upload size={11} /> Product Images</label>
-            <div className="border-2 border-dashed border-white/10 rounded-2xl p-6 text-center hover:border-indigo-500/30 transition-all cursor-pointer relative group">
-              <input type="file" multiple accept="image/*" onChange={e => setFiles(Array.from(e.target.files))}
+            
+            {/* Existing Images Grid */}
+            {product?.images?.length > 0 && (
+              <div className="grid grid-cols-4 gap-4">
+                {product.images.map((img) => {
+                  const isRemoved = imagesToRemove.includes(img.publicId);
+                  return (
+                    <div key={img.publicId} className={`relative aspect-square rounded-xl overflow-hidden border ${isRemoved ? 'border-rose-500/50 opacity-40' : 'border-white/10'}`}>
+                      <img src={img.url} className="w-full h-full object-cover" alt="" />
+                      {!isRemoved && (
+                        <button 
+                          type="button"
+                          onClick={() => handleRemoveExisting(img.publicId)}
+                          className="absolute top-1.5 right-1.5 p-1.5 bg-rose-500 text-white rounded-lg hover:bg-rose-600 transition-colors shadow-lg"
+                        >
+                          <Trash2 size={12} />
+                        </button>
+                      )}
+                      {isRemoved && (
+                        <button 
+                          type="button"
+                          onClick={() => setImagesToRemove(prev => prev.filter(id => id !== img.publicId))}
+                          className="absolute inset-0 flex items-center justify-center bg-rose-500/20 text-rose-500 text-[10px] font-bold uppercase tracking-widest"
+                        >
+                          Undo
+                        </button>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+
+            {/* New Files Grid */}
+            {files.length > 0 && (
+              <div className="grid grid-cols-4 gap-4">
+                {files.map((file, i) => (
+                  <div key={i} className="relative aspect-square rounded-xl overflow-hidden border border-indigo-500/30">
+                    <img src={URL.createObjectURL(file)} className="w-full h-full object-cover" alt="" />
+                    <button 
+                      type="button"
+                      onClick={() => handleRemoveNew(i)}
+                      className="absolute top-1.5 right-1.5 p-1.5 bg-rose-500 text-white rounded-lg hover:bg-rose-600 transition-colors shadow-lg"
+                    >
+                      <Trash2 size={12} />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            <div className="border-2 border-dashed border-white/10 rounded-2xl p-8 text-center hover:border-indigo-500/30 transition-all cursor-pointer relative group">
+              <input type="file" multiple accept="image/*" onChange={e => setFiles(prev => [...prev, ...Array.from(e.target.files)])}
                 className="absolute inset-0 opacity-0 cursor-pointer" />
               <Upload size={24} className="text-slate-600 group-hover:text-indigo-400 transition-colors mx-auto mb-2" />
-              <p className="text-sm text-slate-400 font-medium">
-                {files.length > 0 ? `${files.length} file${files.length > 1 ? 's' : ''} selected` : 'Click or drag images here'}
-              </p>
+              <p className="text-sm text-slate-400 font-medium">Click or drag more images here</p>
               <p className="text-xs text-slate-600 mt-1">PNG, JPG, WEBP up to 10MB each</p>
             </div>
-            {product?.images?.length > 0 && files.length === 0 && (
-              <p className="text-[11px] text-slate-500 mt-1.5">
-                {product.images.length} existing image{product.images.length > 1 ? 's' : ''} · Upload new ones to replace
-              </p>
-            )}
           </div>
 
           {/* Active toggle */}

@@ -2,6 +2,7 @@ import { Routes, Route, Navigate } from 'react-router-dom';
 import { useEffect } from 'react';
 import useAuthStore from './store/authStore';
 import useCartStore from './store/cartStore';
+import useWishlistStore from './store/wishlistStore';
 import useSettingsStore from './store/settingsStore';
 import Maintenance from './pages/Maintenance';
 
@@ -22,6 +23,9 @@ import Orders from './pages/Orders';
 import Profile from './pages/Profile';
 import Login from './pages/auth/Login';
 import Register from './pages/auth/Register';
+import Support from './pages/Support';
+import Wishlist from './pages/Wishlist';
+
 
 import ErrorBoundary from './components/ErrorBoundary';
 
@@ -30,17 +34,20 @@ export default function App() {
   const { fetchCart } = useCartStore();
   const { maintenanceMode, checkMaintenance, isLoading: settingsLoading } = useSettingsStore();
 
+  const { fetchWishlist } = useWishlistStore();
+
   useEffect(() => {
     rehydrate();
     checkMaintenance();
   }, [rehydrate, checkMaintenance]);
 
-  // Fetch cart from backend whenever user is authenticated
+  // Fetch cart & wishlist from backend whenever user is authenticated
   useEffect(() => {
     if (isAuthenticated) {
       fetchCart();
+      fetchWishlist();
     }
-  }, [isAuthenticated, fetchCart]);
+  }, [isAuthenticated, fetchCart, fetchWishlist]);
 
   if (settingsLoading) {
     return (
@@ -65,13 +72,18 @@ export default function App() {
       <Route element={<MainLayout />}>
         <Route path="/" element={<Home />} />
         <Route path="/products" element={<ProductList />} />
+        <Route path="/collections" element={<ProductList />} />
+        <Route path="/new" element={<ProductList />} />
         <Route path="/products/:id" element={<ProductDetail />} />
         <Route path="/cart" element={<AuthGuard><Cart /></AuthGuard>} />
         <Route path="/checkout" element={<AuthGuard><Checkout /></AuthGuard>} />
         <Route path="/order-confirmation/:id" element={<AuthGuard><OrderConfirmation /></AuthGuard>} />
         <Route path="/orders" element={<AuthGuard><Orders /></AuthGuard>} />
         <Route path="/profile" element={<AuthGuard><Profile /></AuthGuard>} />
+        <Route path="/wishlist" element={<AuthGuard><Wishlist /></AuthGuard>} />
+        <Route path="/support" element={<Support />} />
       </Route>
+
 
       {/* Catch-all redirect */}
       <Route path="*" element={<Navigate to="/" replace />} />

@@ -1,37 +1,62 @@
 import { useState, useEffect } from 'react';
-import { Search, Filter, SlidersHorizontal, ChevronDown, Package, LayoutGrid, List } from 'lucide-react';
+import { useLocation } from 'react-router-dom';
+import { Search, Filter, SlidersHorizontal, ChevronDown, Package, LayoutGrid, List, X } from 'lucide-react';
 import ProductCard from '../components/product/ProductCard';
 import useProductStore from '../store/productStore';
 import { ProductSkeleton } from '../components/ui/Skeleton';
 
 export default function ProductList() {
+  const location = useLocation();
   const { products, fetchProducts, isLoading, error } = useProductStore();
   const [viewMode, setViewMode] = useState('grid');
   const [searchTerm, setSearchTerm] = useState('');
   const [sortBy, setSortBy] = useState('newest');
+  const [selectedCategory, setSelectedCategory] = useState('All');
+  const [showFilters, setShowFilters] = useState(false);
+  const [priceRange, setPriceRange] = useState(200000); // Max price default
+
+  const getPageInfo = () => {
+    if (location.pathname === '/collections') return { title: 'Elite Collections', subtitle: 'Curated sets of premium digital artifacts.' };
+    if (location.pathname === '/new') return { title: 'New Arrivals', subtitle: 'The latest synchronization of cutting-edge essentials.' };
+    return { title: 'Signature Catalog', subtitle: 'Explore our curated selection of high-performance digital artifacts.' };
+  };
+
+  const { title, subtitle } = getPageInfo();
 
   useEffect(() => {
     fetchProducts();
     window.scrollTo(0, 0);
   }, [fetchProducts]);
 
-  const filteredProducts = (products || []).filter(p => 
-    p.name.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const categories = ['All', ...new Set((products || []).map(p => p.category?.name).filter(Boolean))];
+
+  const filteredProducts = (products || [])
+    .filter(p => {
+      const matchesSearch = p.name.toLowerCase().includes(searchTerm.toLowerCase());
+      const matchesCategory = selectedCategory === 'All' || p.category?.name === selectedCategory;
+      const matchesPrice = p.price <= priceRange;
+      return matchesSearch && matchesCategory && matchesPrice;
+    })
+    .sort((a, b) => {
+      if (sortBy === 'price-low') return a.price - b.price;
+      if (sortBy === 'price-high') return b.price - a.price;
+      if (sortBy === 'newest') return new Date(b.createdAt) - new Date(a.createdAt);
+      return 0;
+    });
 
   return (
-    <div className="pt-32 pb-24 animate-fade-in min-h-screen">
-      <div className="max-w-7xl mx-auto px-6 space-y-12">
+    <div className="pt-24 pb-20 animate-fade-in min-h-screen">
+      <div className="max-w-7xl mx-auto px-6 space-y-10">
         
         {/* Catalog Header */}
-        <div className="flex flex-col md:flex-row justify-between items-end gap-8 border-b border-white/5 pb-12">
-           <div className="space-y-4">
-              <span className="px-4 py-1.5 bg-indigo-600/10 text-indigo-500 text-[10px] font-bold uppercase tracking-[0.2em] rounded-full border border-indigo-500/20">
+        <div className="flex flex-col md:flex-row justify-between items-end gap-6 border-b border-white/5 pb-8">
+           <div className="space-y-3">
+              <span className="px-3 py-1 bg-indigo-600/10 text-indigo-500 text-[9px] font-bold uppercase tracking-[0.2em] rounded-full border border-indigo-500/20">
                 Member Exclusive Collection
               </span>
-              <h1 className="text-6xl font-bold tracking-tight text-white">Signature Catalog</h1>
-              <p className="text-slate-500 font-light max-w-md leading-relaxed">
-                Explore our curated selection of high-performance digital artifacts and signature essentials.
+              <h1 className="text-4xl md:text-5xl font-bold tracking-tight text-white">{title}</h1>
+              <p className="text-slate-500 text-sm font-light max-w-md leading-relaxed">
+                {subtitle}
               </p>
            </div>
            <div className="flex items-center gap-3">
@@ -78,8 +103,18 @@ export default function ProductList() {
                  </select>
                  <ChevronDown size={14} className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 pointer-events-none" />
               </div>
-              <button className="flex items-center gap-2 px-6 py-3 bg-white/[0.02] border border-white/10 rounded-2xl text-sm font-bold text-slate-400 hover:text-white hover:bg-white/5 transition-all uppercase tracking-widest">
+              <button 
+                onClick={() => setShowFilters(true)}
+                className={`flex items-center gap-2 px-6 py-3 rounded-2xl text-sm font-bold uppercase tracking-widest transition-all ${
+                  selectedCategory !== 'All' || priceRange < 200000 
+                  ? 'bg-primary text-white shadow-lg shadow-primary/20' 
+                  : 'bg-white/[0.02] border border-white/10 text-slate-400 hover:text-white hover:bg-white/5'
+                }`}
+              >
                  <SlidersHorizontal size={18} /> Filters
+                 {(selectedCategory !== 'All' || priceRange < 200000) && (
+                   <span className="w-2 h-2 bg-white rounded-full animate-pulse ml-1" />
+                 )}
               </button>
            </div>
         </div>
@@ -110,12 +145,82 @@ export default function ProductList() {
                 : 'grid-cols-1'
             }`}>
               {filteredProducts.map(product => (
-                <ProductCard key={product._id} product={product} />
+                <ProductCard key={product._id} product={product} viewMode={viewMode} />
               ))}
             </div>
           )}
         </div>
       </div>
+      {/* ── Filter Sidebar Flyout ── */}
+      {showFilters && (
+        <div className="fixed inset-0 z-[200] flex justify-end">
+           <div className="absolute inset-0 bg-space-950/80 backdrop-blur-md animate-fade-in" onClick={() => setShowFilters(false)} />
+           <div className="relative w-full max-w-md bg-[#020617] border-l border-white/10 p-12 space-y-12 animate-slide-left shadow-2xl">
+              <div className="flex justify-between items-center">
+                 <h3 className="text-2xl font-bold text-white tracking-tight uppercase">Filter Index</h3>
+                 <button onClick={() => setShowFilters(false)} className="p-2 text-slate-500 hover:text-white transition-colors">
+                    <X size={24} />
+                 </button>
+              </div>
+
+              {/* Categories */}
+              <div className="space-y-6">
+                 <p className="text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em]">Artifact Category</p>
+                 <div className="flex flex-wrap gap-3">
+                    {categories.map(cat => (
+                      <button 
+                        key={cat}
+                        onClick={() => setSelectedCategory(cat)}
+                        className={`px-5 py-2.5 rounded-xl text-xs font-bold transition-all border ${
+                          selectedCategory === cat 
+                          ? 'bg-primary border-primary text-white shadow-lg shadow-primary/20' 
+                          : 'bg-white/5 border-white/5 text-slate-400 hover:border-white/20'
+                        }`}
+                      >
+                         {cat}
+                      </button>
+                    ))}
+                 </div>
+              </div>
+
+              {/* Price Range */}
+              <div className="space-y-6">
+                 <div className="flex justify-between items-end">
+                    <p className="text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em]">Price Threshold</p>
+                    <span className="text-sm font-bold text-primary">Under ₹{priceRange.toLocaleString('en-IN')}</span>
+                 </div>
+                 <input 
+                  type="range" 
+                  min="0" 
+                  max="200000" 
+                  step="5000"
+                  className="w-full accent-primary h-1.5 bg-white/5 rounded-full appearance-none cursor-pointer"
+                  value={priceRange}
+                  onChange={(e) => setPriceRange(Number(e.target.value))}
+                 />
+                 <div className="flex justify-between text-[10px] font-bold text-slate-600">
+                    <span>₹0</span>
+                    <span>₹2,00,000+</span>
+                 </div>
+              </div>
+
+              <div className="pt-12 border-t border-white/5 flex gap-4">
+                 <button 
+                  onClick={() => { setSelectedCategory('All'); setPriceRange(200000); }}
+                  className="flex-1 py-4 bg-white/5 hover:bg-white/10 text-white rounded-2xl text-xs font-bold uppercase tracking-widest transition-all"
+                 >
+                    Reset Protocol
+                 </button>
+                 <button 
+                  onClick={() => setShowFilters(false)}
+                  className="flex-1 btn-primary py-4 text-xs font-bold uppercase tracking-widest"
+                 >
+                    Apply Matrix
+                 </button>
+              </div>
+           </div>
+        </div>
+      )}
     </div>
   );
 }

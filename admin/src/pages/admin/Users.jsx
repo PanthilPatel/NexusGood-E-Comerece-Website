@@ -35,16 +35,6 @@ export default function AdminUsers() {
     fetchUsers();
   }, []);
 
-  const handleRoleToggle = async (userId, currentRole) => {
-    const newRole = currentRole === 'admin' ? 'customer' : 'admin';
-    try {
-      await api.put(`/users/${userId}/role`, { role: newRole });
-      toast.success(`Role updated to ${newRole}`);
-      setUsers(users.map(u => u._id === userId ? { ...u, role: newRole } : u));
-    } catch (err) {
-      toast.error(err.response?.data?.message || 'Failed to update role');
-    }
-  };
 
   if (error) {
     return (
@@ -91,20 +81,19 @@ export default function AdminUsers() {
                <thead className="bg-white/[0.02] border-b border-white/5">
                   <tr className="text-left text-[10px] font-bold text-slate-500 uppercase tracking-widest">
                      <th className="px-8 py-5">Member Profile</th>
-                     <th className="px-8 py-5 text-center">Status</th>
                      <th className="px-8 py-5 text-center">Join Date</th>
                      <th className="px-8 py-5 text-center">Orders</th>
                      <th className="px-8 py-5 text-right">Access Control</th>
                   </tr>
                </thead>
                <tbody className="divide-y divide-white/5">
-                  {loading ? (
+                   {loading ? (
                     Array.from({ length: 5 }).map((_, i) => (
-                      <tr key={i}><td colSpan="5" className="px-8 py-10"><div className="h-8 w-full bg-white/5 rounded-xl animate-pulse" /></td></tr>
+                      <tr key={i}><td colSpan="4" className="px-8 py-10"><div className="h-8 w-full bg-white/5 rounded-xl animate-pulse" /></td></tr>
                     ))
                   ) : displayUsers.length === 0 ? (
                     <tr>
-                      <td colSpan="5" className="px-8 py-20 text-center text-slate-500 italic">No members found in directory.</td>
+                      <td colSpan="4" className="px-8 py-20 text-center text-slate-500 italic">No members found in directory.</td>
                     </tr>
                   ) : displayUsers.map((u) => (
                     <tr key={u._id} className="hover:bg-white/[0.01] transition-colors group">
@@ -119,13 +108,6 @@ export default function AdminUsers() {
                              </div>
                           </div>
                        </td>
-                       <td className="px-8 py-6 text-center">
-                          <span className={`inline-block px-3 py-1 rounded-full text-[9px] font-bold uppercase tracking-widest border ${
-                            u.role === 'admin' ? 'bg-indigo-600/10 text-indigo-500 border-indigo-500/20' : 'bg-white/5 text-slate-400 border-white/10'
-                          }`}>
-                             {u.role}
-                          </span>
-                       </td>
                        <td className="px-8 py-6 text-center text-xs font-bold text-slate-300">
                           {new Date(u.createdAt).toLocaleDateString()}
                        </td>
@@ -134,12 +116,8 @@ export default function AdminUsers() {
                        </td>
                        <td className="px-8 py-6 text-right">
                           <div className="flex justify-end gap-2">
-                             <button 
-                               onClick={() => handleRoleToggle(u._id, u.role)}
-                               className="p-2.5 text-slate-500 hover:text-indigo-500 hover:bg-indigo-500/10 rounded-xl transition-all"
-                               title="Toggle Admin Access"
-                             >
-                                <Shield size={18} strokeWidth={1.5} />
+                             <button className="p-2.5 text-slate-500 hover:text-indigo-500 hover:bg-indigo-500/10 rounded-xl transition-all" title="View Profile">
+                                <ExternalLink size={18} strokeWidth={1.5} />
                              </button>
                              <button className="p-2.5 text-slate-500 hover:text-rose-500 hover:bg-rose-500/10 rounded-xl transition-all">
                                 <Trash2 size={18} strokeWidth={1.5} />

@@ -71,7 +71,11 @@ export default function SocialProof() {
         <div className="relative flex-shrink-0">
           <div className="w-14 h-14 rounded-xl overflow-hidden bg-white/5 border border-white/5">
             {purchase.productImage ? (
-              <img src={purchase.productImage} alt="" className="w-full h-full object-cover" />
+              <img 
+                src={purchase.productImage.startsWith('http') ? purchase.productImage : `${import.meta.env.VITE_API_URL?.replace('/api', '')}${purchase.productImage}`} 
+                alt="" 
+                className="w-full h-full object-cover" 
+              />
             ) : (
               <div className="w-full h-full flex items-center justify-center text-primary bg-primary/10">
                 <ShoppingBag size={20} />
@@ -93,7 +97,7 @@ export default function SocialProof() {
 
         <button 
           onClick={() => setVisible(false)}
-          className="absolute top-2 right-2 text-slate-500 hover:text-white transition-colors opacity-0 group-hover:opacity-100"
+          className="absolute top-2 right-2 text-slate-500 hover:text-white transition-colors"
         >
           <X size={12} />
         </button>

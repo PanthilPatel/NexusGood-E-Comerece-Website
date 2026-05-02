@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid,
   Tooltip as RechartsTooltip, ResponsiveContainer,
@@ -7,7 +8,7 @@ import {
 import {
   ShoppingCart, DollarSign, TrendingUp, Package,
   Download, AlertCircle, ArrowUpRight, ArrowDownRight,
-  Info, ShoppingBag, Users
+  Info, ShoppingBag, Users, IndianRupee
 } from 'lucide-react';
 import api from '../../services/api';
 
@@ -19,9 +20,8 @@ function KpiCard({ icon: Icon, label, value, sub, growth, color, bg, prefix = ''
         <div className={`w-12 h-12 ${bg} ${color} rounded-xl flex items-center justify-center`}>
           <Icon size={22} strokeWidth={1.5} />
         </div>
-        <div className={`flex items-center gap-1 text-[10px] font-bold px-2.5 py-1 rounded-full ${
-          isUp ? 'bg-emerald-500/10 text-emerald-400' : 'bg-rose-500/10 text-rose-400'
-        }`}>
+        <div className={`flex items-center gap-1 text-[10px] font-bold px-2.5 py-1 rounded-full ${isUp ? 'bg-emerald-500/10 text-emerald-400' : 'bg-rose-500/10 text-rose-400'
+          }`}>
           {isUp ? <ArrowUpRight size={11} /> : <ArrowDownRight size={11} />}
           {isUp ? '+' : ''}{growth}% this month
         </div>
@@ -138,7 +138,7 @@ export default function AdminAnalytics() {
       bg: 'bg-indigo-500/10',
     },
     {
-      icon: DollarSign,
+      icon: IndianRupee,
       label: 'Total Revenue',
       value: summary?.totalRevenue ?? 0,
       sub: `₹${(summary?.thisMonthRevenue ?? 0).toLocaleString('en-IN')} this month`,
@@ -148,7 +148,7 @@ export default function AdminAnalytics() {
       prefix: '₹',
     },
     {
-      icon: TrendingUp,
+      icon: IndianRupee,
       label: 'Realized Profit',
       value: summary?.totalProfit ?? 0,
       sub: `₹${(summary?.thisMonthProfit ?? 0).toLocaleString('en-IN')} this month`,
@@ -206,13 +206,13 @@ export default function AdminAnalytics() {
               </span>
             </div>
             <p className="text-sm text-slate-400 mt-1">
-              <span className="text-white font-bold">₹{(summary.pendingCODRevenue).toLocaleString('en-IN')}</span>
-              {' '}across <span className="text-white font-bold">{summary.pendingCODCount}</span> COD order{summary.pendingCODCount !== 1 ? 's' : ''} currently in transit (processing / shipped).
+              <span className="text-white font-bold">₹{(summary?.pendingCODRevenue || 0).toLocaleString('en-IN')}</span>
+              {' '}across <span className="text-white font-bold">{summary?.pendingCODCount || 0}</span> COD order{summary?.pendingCODCount !== 1 ? 's' : ''} currently in transit (processing / shipped).
               This amount will move to <span className="text-emerald-400 font-semibold">Total Revenue</span> once each order is marked <span className="text-emerald-400 font-semibold">Delivered</span>.
             </p>
           </div>
           <p className="text-2xl font-bold text-amber-400 flex-shrink-0">
-            ₹{(summary.pendingCODRevenue).toLocaleString('en-IN')}
+            ₹{(summary?.pendingCODRevenue || 0).toLocaleString('en-IN')}
           </p>
         </div>
       )}
@@ -296,33 +296,33 @@ export default function AdminAnalytics() {
 
       {/* ── Customer Intelligence ── */}
       <div className="bg-[#0f172a] border border-white/[0.07] rounded-3xl p-8 space-y-8">
-         <div className="flex justify-between items-end">
-            <div className="space-y-1">
-               <h3 className="text-xl font-bold text-white">Customer Intelligence</h3>
-               <p className="text-xs text-slate-500">Automated segmentation based on purchasing frequency and recency.</p>
-            </div>
-            <span className="text-[10px] font-bold text-indigo-400 bg-indigo-500/10 px-3 py-1 rounded-full uppercase tracking-widest border border-indigo-500/20">RFM Analysis Active</span>
-         </div>
+        <div className="flex justify-between items-end">
+          <div className="space-y-1">
+            <h3 className="text-xl font-bold text-white">Customer Intelligence</h3>
+            <p className="text-xs text-slate-500">Automated segmentation based on purchasing frequency and recency.</p>
+          </div>
+          <span className="text-[10px] font-bold text-indigo-400 bg-indigo-500/10 px-3 py-1 rounded-full uppercase tracking-widest border border-indigo-500/20">RFM Analysis Active</span>
+        </div>
 
-         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            {[
-               { label: 'Champions', value: summary?.bySegment?.Champion || 0, icon: TrendingUp, color: 'text-emerald-400', desc: 'Highest value users' },
-               { label: 'Loyalists', value: summary?.bySegment?.Loyal || 0, icon: ShoppingBag, color: 'text-indigo-400', desc: 'Regular customers' },
-               { label: 'New Signups', value: summary?.bySegment?.New || 0, icon: Users, color: 'text-amber-400', desc: 'Recently joined' },
-               { label: 'At Risk', value: summary?.bySegment?.AtRisk || 0, icon: AlertCircle, color: 'text-rose-400', desc: 'Slowing interaction' },
-            ].map(seg => (
-               <div key={seg.label} className="p-5 bg-white/[0.02] border border-white/5 rounded-2xl space-y-3">
-                  <div className="flex items-center justify-between">
-                     <div className={`p-2 rounded-lg bg-white/5 ${seg.color}`}><seg.icon size={16} /></div>
-                     <span className="text-2xl font-bold text-white">{seg.value}</span>
-                  </div>
-                  <div>
-                     <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">{seg.label}</p>
-                     <p className="text-[10px] text-slate-600 mt-0.5">{seg.desc}</p>
-                  </div>
-               </div>
-            ))}
-         </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          {[
+            { label: 'Champions', value: summary?.bySegment?.Champion || 0, icon: TrendingUp, color: 'text-emerald-400', desc: 'Highest value users' },
+            { label: 'Loyalists', value: summary?.bySegment?.Loyal || 0, icon: ShoppingBag, color: 'text-indigo-400', desc: 'Regular customers' },
+            { label: 'New Signups', value: summary?.bySegment?.New || 0, icon: Users, color: 'text-amber-400', desc: 'Recently joined' },
+            { label: 'At Risk', value: summary?.bySegment?.AtRisk || 0, icon: AlertCircle, color: 'text-rose-400', desc: 'Slowing interaction' },
+          ].map(seg => (
+            <div key={seg.label} className="p-5 bg-white/[0.02] border border-white/5 rounded-2xl space-y-3">
+              <div className="flex items-center justify-between">
+                <div className={`p-2 rounded-lg bg-white/5 ${seg.color}`}><seg.icon size={16} /></div>
+                <span className="text-2xl font-bold text-white">{seg.value}</span>
+              </div>
+              <div>
+                <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">{seg.label}</p>
+                <p className="text-[10px] text-slate-600 mt-0.5">{seg.desc}</p>
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
 
       {/* ── Monthly Breakdown Table ── */}

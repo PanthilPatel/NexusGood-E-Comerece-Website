@@ -21,18 +21,22 @@ exports.createReview = async (req, res, next) => {
       return res.status(404).json({ message: 'Product not found.' });
     }
 
-    // Check for existing review
-    const existingReview = await Review.findOne({ user: req.user._id, product: productId });
-    if (existingReview) {
-      return res.status(400).json({ message: 'You have already reviewed this product.' });
+    // Check for existing review - Update if exists, otherwise Create
+    let review = await Review.findOne({ user: req.user._id, product: productId });
+    
+    if (review) {
+      review.rating = Number(rating);
+      review.comment = comment;
+      review.status = 'pending'; // Reset to pending for re-moderation
+      await review.save();
+    } else {
+      review = await Review.create({
+        user: req.user._id,
+        product: productId,
+        rating: Number(rating),
+        comment,
+      });
     }
-
-    const review = await Review.create({
-      user: req.user._id,
-      product: productId,
-      rating: Number(rating),
-      comment,
-    });
 
     // Update product avgRating and numReviews
     const stats = await Review.aggregate([
@@ -54,7 +58,7 @@ exports.createReview = async (req, res, next) => {
 
     const populated = await Review.findById(review._id).populate('user', 'name avatar');
 
-    res.status(201).json({ message: 'Review submitted.', review: populated });
+    res.status(201).json({ success: true, message: 'Review submitted.', review: populated });
   } catch (error) {
     next(error);
   }

@@ -249,6 +249,45 @@ export default function Settings() {
                       </div>
                     </div>
                   </div>
+
+                  {/* Active Sessions Section */}
+                  <div className="pt-10 border-t border-white/5 space-y-6">
+                    <div className="flex items-center justify-between">
+                      <h3 className="text-sm font-bold text-white uppercase tracking-widest">Active Device Sessions</h3>
+                      <span className="text-[10px] font-bold text-indigo-400 bg-indigo-500/10 px-3 py-1 rounded-full uppercase tracking-widest">2 Admin(s) Online</span>
+                    </div>
+
+                    <div className="space-y-4">
+                      {[
+                        { device: 'Windows 11 • Chrome 124', location: 'Surat, India (Your Device)', ip: '122.161.x.x', status: 'Current', icon: Database },
+                        { device: 'iPhone 15 Pro • Safari', location: 'Ahmedabad, India', ip: '103.44.x.x', status: 'Active 2m ago', icon: Globe },
+                      ].map((session, i) => (
+                        <div key={i} className="flex items-center justify-between p-6 bg-white/5 border border-white/5 rounded-3xl group hover:bg-white/[0.08] transition-all">
+                          <div className="flex items-center gap-6">
+                            <div className="w-14 h-14 bg-indigo-500/10 rounded-2xl flex items-center justify-center text-indigo-500 group-hover:scale-110 transition-transform">
+                              <session.icon size={24} />
+                            </div>
+                            <div>
+                              <p className="text-sm font-bold text-white">{session.device}</p>
+                              <p className="text-xs text-slate-500 font-medium mt-1">{session.location} • {session.ip}</p>
+                            </div>
+                          </div>
+                          <div className="text-right space-y-2">
+                            <span className={`text-[9px] font-bold px-3 py-1 rounded-full uppercase tracking-widest ${
+                              session.status === 'Current' ? 'bg-emerald-500/10 text-emerald-500 border border-emerald-500/20' : 'bg-indigo-500/10 text-indigo-400 border border-indigo-500/20'
+                            }`}>
+                              {session.status}
+                            </span>
+                            {session.status !== 'Current' && (
+                              <button className="block text-[10px] font-bold text-rose-500 hover:text-rose-400 uppercase tracking-widest transition-colors w-full">
+                                Terminate
+                              </button>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
                 </div>
               )}
 

@@ -123,7 +123,7 @@ export default function Login() {
 
         <div className="text-center">
           <a
-            href="http://localhost:5173"
+            href="https://nexus-good-e-coomerece-website.vercel.app"
             className="text-xs text-slate-600 hover:text-slate-400 transition-colors font-bold tracking-widest uppercase"
           >
             ← Back to Store

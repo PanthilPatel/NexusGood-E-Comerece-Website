@@ -76,23 +76,27 @@ export default function AdminAnalytics() {
     if (!salesTrend.length) return;
 
     // Build CSV rows
-    const headers = ['Month', 'Year', 'Orders', 'Revenue (₹)', 'Est. Profit (₹)', 'Avg. Order (₹)'];
+    const headers = ['Date/Timeframe', 'Orders', 'Revenue (INR)', 'Est. Profit (INR)', 'Avg. Order (INR)'];
     const rows = [...salesTrend].reverse().map(row => {
-      const profit = Math.round(row.revenue * 0.20);
+      const profit = row.profit || Math.round(row.revenue * 0.20);
       const avg = row.orders > 0 ? Math.round(row.revenue / row.orders) : 0;
-      return [row.month, row.year, row.orders, row.revenue, profit, avg];
+      return [row.date, row.orders, row.revenue, profit, avg];
     });
 
     // Summary rows at top
     const summaryRows = [
-      ['=== SUMMARY ==='],
-      ['Total Sales', summary?.totalSales ?? 0],
-      ['Total Revenue (₹)', summary?.totalRevenue ?? 0],
-      ['Est. Profit (₹)', summary?.totalProfit ?? 0],
-      ['Total Products Sold', summary?.totalProductsSold ?? 0],
-      ['Pending COD Revenue (₹)', summary?.pendingCODRevenue ?? 0],
+      ['=== NEXUSGOOD BUSINESS REPORT ==='],
+      ['Report Generated', new Date().toLocaleString()],
+      ['Timeframe', range.toUpperCase()],
       [],
-      ['=== MONTHLY BREAKDOWN ==='],
+      ['=== SUMMARY METRICS ==='],
+      ['Total Sales', summary?.totalSales ?? 0],
+      ['Total Revenue (INR)', summary?.totalRevenue ?? 0],
+      ['Total Profit (INR)', summary?.totalProfit ?? 0],
+      ['Total Products Sold', summary?.totalProductsSold ?? 0],
+      ['Pending COD Revenue (INR)', summary?.pendingCODRevenue ?? 0],
+      [],
+      ['=== DETAILED BREAKDOWN ==='],
       headers,
       ...rows,
     ];
@@ -102,7 +106,7 @@ export default function AdminAnalytics() {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `nexusgood-analytics-${new Date().toISOString().slice(0, 10)}.csv`;
+    a.download = `nexusgood-${range}-report-${new Date().toISOString().slice(0, 10)}.csv`;
     a.click();
     URL.revokeObjectURL(url);
   };

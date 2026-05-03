@@ -36,24 +36,27 @@ const app = express();
 
 // Connect to MongoDB
 connectDB().then(async () => {
-  const User = require('./src/models/User');
-  const adminEmail = 'admin@nexusgood.com';
-  const adminPass = 'nexgd@1290';
-  
-  let admin = await User.findOne({ email: adminEmail });
-  if (!admin) {
-    await User.create({
-      name: 'NexusGood Admin',
-      email: adminEmail,
-      password: adminPass,
-      role: 'admin'
-    });
-    console.log(`🚀 Created initial admin account: ${adminEmail} / ${adminPass}`);
-  } else {
-    admin.password = adminPass;
-    admin.role = 'admin';
-    await admin.save();
-    console.log(`✅ Admin account updated and password reset: ${adminEmail} / ${adminPass}`);
+  console.log('🔍 DEBUG: Starting Admin Setup...');
+  try {
+    const User = require('./src/models/User');
+    const adminEmail = 'admin@nexusgood.com';
+    const adminPass = 'nexgd@1290';
+    
+    // Using findOneAndUpdate to be faster and more direct
+    const admin = await User.findOneAndUpdate(
+      { email: adminEmail },
+      { 
+        email: adminEmail,
+        password: adminPass,
+        role: 'admin',
+        name: 'NexusGood Admin'
+      },
+      { upsert: true, new: true, runValidators: true }
+    );
+    
+    console.log(`✅ ADMIN READY: ${admin.email} / ${adminPass}`);
+  } catch (err) {
+    console.error('❌ DEBUG: Admin Setup Failed:', err.message);
   }
 });
 

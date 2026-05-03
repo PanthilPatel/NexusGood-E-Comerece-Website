@@ -389,11 +389,14 @@ export default function Settings() {
                       />
                     </div>
                     <div className="space-y-3">
-                      <label className="text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em] ml-1">System Health</label>
-                      <div className="p-4 bg-white/5 border border-white/5 rounded-2xl flex items-center justify-between">
-                        <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">Global Status</span>
-                        <span className="text-[10px] font-bold text-emerald-500 bg-emerald-500/10 px-3 py-1 rounded-full uppercase tracking-widest">Active</span>
-                      </div>
+                      <label className="text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em] ml-1">Support Phone</label>
+                      <input 
+                        type="text" 
+                        value={storeConfig.phone || '+91 87xxxxxx98'}
+                        onChange={(e) => setStoreConfig({...storeConfig, phone: e.target.value})}
+                        className="w-full bg-white/5 border border-white/5 rounded-2xl py-4 px-6 text-sm text-white focus:border-indigo-500/50 outline-none"
+                        placeholder="+91 XXXXX XXXXX"
+                      />
                     </div>
                   </div>
 

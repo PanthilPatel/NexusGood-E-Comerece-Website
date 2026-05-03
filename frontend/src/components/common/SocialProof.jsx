@@ -90,7 +90,7 @@ export default function SocialProof() {
         <div className="flex-1 pr-4">
           <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-0.5">Verified Purchase</p>
           <p className="text-[11px] text-white font-medium leading-tight line-clamp-2">
-            Someone in <span className="text-primary font-bold">{purchase.city}</span> bought <span className="font-bold">{purchase.productName}</span>
+            Someone bought <span className="font-bold">{purchase.productName}</span>
           </p>
           <p className="text-[9px] text-slate-500 font-bold uppercase tracking-wider mt-1">{timeAgo(purchase.timeAgo)}</p>
         </div>

@@ -66,7 +66,7 @@ export default function Login() {
           <form onSubmit={handleSubmit} className="space-y-5">
             <div className="space-y-1.5">
               <label className="text-[11px] font-bold text-slate-500 uppercase tracking-widest block">
-                Admin Email
+                Email Address
               </label>
               <div className="relative group">
                 <Mail size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-indigo-400 transition-colors" />

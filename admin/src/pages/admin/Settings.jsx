@@ -389,15 +389,10 @@ export default function Settings() {
                       />
                     </div>
                     <div className="space-y-3">
-                      <label className="text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em] ml-1">Maintenance Mode</label>
-                      <div 
-                        onClick={() => setStoreConfig({...storeConfig, maintenance: !storeConfig.maintenance})}
-                        className="flex items-center justify-between p-4 bg-white/5 border border-white/5 rounded-2xl cursor-pointer group hover:bg-white/[0.08] transition-all"
-                      >
-                        <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">Offline Protocol</span>
-                        <div className={`w-12 h-6 rounded-full relative transition-all ${storeConfig.maintenance ? 'bg-indigo-600' : 'bg-slate-700'}`}>
-                           <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-all ${storeConfig.maintenance ? 'left-7' : 'left-1'}`} />
-                        </div>
+                      <label className="text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em] ml-1">System Health</label>
+                      <div className="p-4 bg-white/5 border border-white/5 rounded-2xl flex items-center justify-between">
+                        <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">Global Status</span>
+                        <span className="text-[10px] font-bold text-emerald-500 bg-emerald-500/10 px-3 py-1 rounded-full uppercase tracking-widest">Active</span>
                       </div>
                     </div>
                   </div>

@@ -42,19 +42,22 @@ connectDB().then(async () => {
     const adminEmail = 'admin@nexusgood.com';
     const adminPass = 'nexgd@1290';
     
-    // Using findOneAndUpdate to be faster and more direct
-    const admin = await User.findOneAndUpdate(
-      { email: adminEmail },
-      { 
+    let admin = await User.findOne({ email: adminEmail });
+    if (!admin) {
+      admin = new User({
+        name: 'NexusGood Admin',
         email: adminEmail,
         password: adminPass,
-        role: 'admin',
-        name: 'NexusGood Admin'
-      },
-      { upsert: true, new: true, runValidators: true }
-    );
-    
-    console.log(`✅ ADMIN READY: ${admin.email} / ${adminPass}`);
+        role: 'admin'
+      });
+      await admin.save();
+      console.log(`🚀 Created initial admin account: ${adminEmail} / ${adminPass}`);
+    } else {
+      admin.password = adminPass;
+      admin.role = 'admin';
+      await admin.save(); // This triggers the password hashing hook!
+      console.log(`✅ Admin account updated and password reset: ${adminEmail} / ${adminPass}`);
+    }
   } catch (err) {
     console.error('❌ DEBUG: Admin Setup Failed:', err.message);
   }

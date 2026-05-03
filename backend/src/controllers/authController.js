@@ -13,8 +13,8 @@ const generateRefreshToken = (userId) => {
 
 const cookieOptions = () => ({
   httpOnly: true,
-  secure: process.env.NODE_ENV === 'production',
-  sameSite: process.env.NODE_ENV === 'production' ? 'strict' : 'lax',
+  secure: true, // Always true for cloud deployment
+  sameSite: 'none', // Required for cross-domain cookies
   maxAge: 7 * 24 * 60 * 60 * 1000,
 });
 

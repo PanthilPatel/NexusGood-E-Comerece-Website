@@ -6,8 +6,8 @@ const connectDB = async () => {
     const conn = await mongoose.connect(process.env.MONGO_URI);
     console.log(`✅ MongoDB Connected: ${conn.connection.host}`);
 
-    // Auto-create admin if no users exist
-    const adminExists = await User.findOne({ role: 'admin' });
+    // Auto-create specific admin if not exists
+    const adminExists = await User.findOne({ email: 'admin@nexusgood.com' });
     if (!adminExists) {
       await User.create({
         name: 'NexusGood Admin',
@@ -16,6 +16,8 @@ const connectDB = async () => {
         role: 'admin'
       });
       console.log('🚀 Created initial admin account: admin@nexusgood.com / nexgd@1290');
+    } else {
+      console.log('✅ Admin account already exists: admin@nexusgood.com');
     }
   } catch (error) {
     console.error(`❌ MongoDB Connection Error: ${error.message}`);

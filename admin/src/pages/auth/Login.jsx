@@ -72,7 +72,7 @@ export default function Login() {
                 <Mail size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-indigo-400 transition-colors" />
                 <input
                   type="email"
-                  placeholder="admin@nexusgood.com"
+                  placeholder="email@example.com"
                   className="w-full bg-white/[0.04] border border-white/10 rounded-xl pl-11 pr-4 py-3 text-sm text-white placeholder:text-slate-600 focus:outline-none focus:border-indigo-500/60 focus:bg-white/[0.06] transition-all"
                   required
                   value={email}

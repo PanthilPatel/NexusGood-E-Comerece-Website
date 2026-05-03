@@ -27,7 +27,18 @@ const revenueFilter = (extra = {}) => {
 // GET /api/analytics/revenue
 exports.getRevenue = async (req, res, next) => {
   try {
+    const { range = 'month' } = req.query;
     const now = new Date();
+    let startDate;
+
+    switch (range) {
+      case 'day': startDate = new Date(now.getTime() - 24 * 60 * 60 * 1000); break;
+      case 'year': startDate = new Date(now.getFullYear(), 0, 1); break;
+      case 'all': startDate = new Date(2000, 0, 1); break;
+      case 'month':
+      default: startDate = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000); break;
+    }
+
     const startOfMonth     = new Date(now.getFullYear(), now.getMonth(), 1);
     const startOfLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
     const endOfLastMonth   = new Date(now.getFullYear(), now.getMonth(), 0);
@@ -38,7 +49,7 @@ exports.getRevenue = async (req, res, next) => {
     ]);
 
     const [totalRes, thisMonthRes, lastMonthRes] = await Promise.all([
-      agg({}),
+      agg({ createdAt: { $gte: startDate } }),
       agg({ createdAt: { $gte: startOfMonth } }),
       agg({ createdAt: { $gte: startOfLastMonth, $lte: endOfLastMonth } }),
     ]);
@@ -184,7 +195,18 @@ exports.getOrderStats = async (req, res, next) => {
 // GET /api/analytics/summary
 exports.getSummary = async (req, res, next) => {
   try {
+    const { range = 'month' } = req.query;
     const now = new Date();
+    let startDate;
+
+    switch (range) {
+      case 'day': startDate = new Date(now.getTime() - 24 * 60 * 60 * 1000); break;
+      case 'year': startDate = new Date(now.getFullYear(), 0, 1); break;
+      case 'all': startDate = new Date(2000, 0, 1); break;
+      case 'month':
+      default: startDate = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000); break;
+    }
+
     const startOfMonth     = new Date(now.getFullYear(), now.getMonth(), 1);
     const startOfLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
     const endOfLastMonth   = new Date(now.getFullYear(), now.getMonth(), 0);
@@ -195,7 +217,7 @@ exports.getSummary = async (req, res, next) => {
     });
 
     const [totalSales, thisMonthSales, lastMonthSales] = await Promise.all([
-      countOrders({}),
+      countOrders({ createdAt: { $gte: startDate } }),
       countOrders({ createdAt: { $gte: startOfMonth } }),
       countOrders({ createdAt: { $gte: startOfLastMonth, $lte: endOfLastMonth } }),
     ]);
@@ -211,7 +233,7 @@ exports.getSummary = async (req, res, next) => {
     ]);
 
     const [revAll, revThisMonth, revLastMonth] = await Promise.all([
-      aggRevenue({}),
+      aggRevenue({ createdAt: { $gte: startDate } }),
       aggRevenue({ createdAt: { $gte: startOfMonth } }),
       aggRevenue({ createdAt: { $gte: startOfLastMonth, $lte: endOfLastMonth } }),
     ]);
@@ -232,7 +254,7 @@ exports.getSummary = async (req, res, next) => {
     ]);
 
     const [profitAll, profitThisMonth, profitLastMonth] = await Promise.all([
-      aggProfit({}),
+      aggProfit({ createdAt: { $gte: startDate } }),
       aggProfit({ createdAt: { $gte: startOfMonth } }),
       aggProfit({ createdAt: { $gte: startOfLastMonth, $lte: endOfLastMonth } }),
     ]);
@@ -253,7 +275,7 @@ exports.getSummary = async (req, res, next) => {
     ]);
 
     const [soldAll, soldThisMonth, soldLastMonth] = await Promise.all([
-      aggSold({}),
+      aggSold({ createdAt: { $gte: startDate } }),
       aggSold({ createdAt: { $gte: startOfMonth } }),
       aggSold({ createdAt: { $gte: startOfLastMonth, $lte: endOfLastMonth } }),
     ]);

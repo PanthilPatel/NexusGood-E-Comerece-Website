@@ -169,17 +169,143 @@ export default function Settings() {
               )}
 
               {activeTab === 'security' && (
-                <div className="space-y-8 text-center py-20">
-                  <div className="w-20 h-20 bg-indigo-500/10 rounded-3xl flex items-center justify-center mx-auto mb-6">
-                    <Shield size={40} className="text-indigo-500" />
+                <div className="space-y-10">
+                  <div className="flex items-start gap-8 p-8 bg-indigo-500/5 border border-indigo-500/10 rounded-[2rem]">
+                    <div className="w-20 h-20 bg-indigo-500 rounded-3xl flex items-center justify-center shadow-xl shadow-indigo-600/20 shrink-0">
+                      <Shield size={32} className="text-white" />
+                    </div>
+                    <div className="space-y-2">
+                      <h3 className="text-xl font-bold text-white tracking-tight">Two-Factor Authentication</h3>
+                      <p className="text-sm text-slate-400 leading-relaxed max-w-xl">
+                        Protect your administrative account with an extra layer of security. Once enabled, you'll need to enter a verification code from your mobile authenticator app (like Google Authenticator or Authy) to log in.
+                      </p>
+                    </div>
                   </div>
-                  <h3 className="text-xl font-bold text-white">Two-Factor Authentication</h3>
-                  <p className="text-slate-400 max-w-md mx-auto">Enhance your account security by adding a secondary verification layer.</p>
-                  <button className="btn-primary px-10 py-4 font-bold text-xs uppercase tracking-widest opacity-50 cursor-not-allowed">
-                    Configure 2FA (Coming Soon)
-                  </button>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center px-4">
+                    <div className="space-y-6">
+                      <div className="flex items-center gap-4">
+                        <div className="w-8 h-8 rounded-full bg-emerald-500/20 text-emerald-500 flex items-center justify-center font-bold text-xs">1</div>
+                        <p className="text-sm font-bold text-slate-300">Scan this QR code with your app</p>
+                      </div>
+                      <div className="p-4 bg-white rounded-3xl w-48 h-48 mx-auto md:mx-0 shadow-2xl shadow-black/50">
+                        <img 
+                          src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=otpauth://totp/NexusGood:${user?.email}?secret=NEXUSGOODSECRETKEY&issuer=NexusGood`} 
+                          alt="2FA QR Code"
+                          className="w-full h-full"
+                        />
+                      </div>
+                    </div>
+                    <div className="space-y-6">
+                      <div className="flex items-center gap-4">
+                        <div className="w-8 h-8 rounded-full bg-emerald-500/20 text-emerald-500 flex items-center justify-center font-bold text-xs">2</div>
+                        <p className="text-sm font-bold text-slate-300">Enter the 6-digit verification code</p>
+                      </div>
+                      <div className="space-y-4">
+                        <input 
+                          type="text" 
+                          maxLength="6"
+                          placeholder="000 000"
+                          className="w-full bg-white/5 border border-white/10 rounded-2xl py-6 text-center text-4xl font-bold tracking-[0.5em] text-indigo-500 outline-none focus:border-indigo-500 transition-all"
+                        />
+                        <button className="w-full btn-primary py-4 font-bold text-xs uppercase tracking-widest shadow-lg shadow-indigo-600/20">
+                          Verify & Activate 2FA
+                        </button>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               )}
+
+              {activeTab === 'notifications' && (
+                <div className="space-y-8">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    {[
+                      { label: 'API Status', value: 'Operational', color: 'text-emerald-400' },
+                      { label: 'DB Latency', value: '42ms', color: 'text-emerald-400' },
+                      { label: 'Security Protocols', value: 'Encrypted', color: 'text-indigo-400' },
+                    ].map((stat, i) => (
+                      <div key={i} className="p-6 bg-white/5 border border-white/5 rounded-3xl">
+                        <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">{stat.label}</p>
+                        <p className={`text-xl font-bold ${stat.color}`}>{stat.value}</p>
+                      </div>
+                    ))}
+                  </div>
+
+                  <div className="space-y-4">
+                    <h3 className="text-xs font-bold text-slate-500 uppercase tracking-[0.2em] ml-1">Recent Security Events</h3>
+                    <div className="space-y-3">
+                      {[
+                        { event: 'Admin login success', time: '2 mins ago', ip: '122.161.x.x', status: 'Success' },
+                        { event: 'Database backup completed', time: '1 hour ago', ip: 'System', status: 'Success' },
+                        { event: 'Failed login attempt detected', time: '4 hours ago', ip: '103.44.x.x', status: 'Blocked' },
+                      ].map((log, i) => (
+                        <div key={i} className="flex items-center justify-between p-5 bg-white/5 border border-white/5 rounded-2xl hover:bg-white/[0.08] transition-all group">
+                          <div className="flex items-center gap-4">
+                            <div className={`w-2 h-2 rounded-full ${log.status === 'Success' ? 'bg-emerald-500' : 'bg-rose-500'} animate-pulse`} />
+                            <div>
+                              <p className="text-sm font-bold text-white">{log.event}</p>
+                              <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest mt-1">{log.ip} • {log.time}</p>
+                            </div>
+                          </div>
+                          <span className={`text-[9px] font-bold px-3 py-1 rounded-full uppercase tracking-widest ${
+                            log.status === 'Success' ? 'bg-emerald-500/10 text-emerald-500' : 'bg-rose-500/10 text-rose-500'
+                          }`}>
+                            {log.status}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {activeTab === 'store' && (
+                <div className="space-y-8">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div className="space-y-3">
+                      <label className="text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em] ml-1">Store Name</label>
+                      <input 
+                        type="text" 
+                        defaultValue="NexusGood Enterprise"
+                        className="w-full bg-white/5 border border-white/5 rounded-2xl py-4 px-6 text-sm text-white focus:border-indigo-500/50 outline-none"
+                      />
+                    </div>
+                    <div className="space-y-3">
+                      <label className="text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em] ml-1">Global Currency</label>
+                      <select className="w-full bg-white/5 border border-white/5 rounded-2xl py-4 px-6 text-sm text-white focus:border-indigo-500/50 outline-none appearance-none">
+                        <option value="INR">INR (₹) - Indian Rupee</option>
+                        <option value="USD">USD ($) - US Dollar</option>
+                        <option value="EUR">EUR (€) - Euro</option>
+                      </select>
+                    </div>
+                    <div className="space-y-3">
+                      <label className="text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em] ml-1">Support Email</label>
+                      <input 
+                        type="email" 
+                        defaultValue="support@nexusgood.com"
+                        className="w-full bg-white/5 border border-white/5 rounded-2xl py-4 px-6 text-sm text-white focus:border-indigo-500/50 outline-none"
+                      />
+                    </div>
+                    <div className="space-y-3">
+                      <label className="text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em] ml-1">Maintenance Mode</label>
+                      <div className="flex items-center justify-between p-4 bg-white/5 border border-white/5 rounded-2xl">
+                        <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">Offline Protocol</span>
+                        <div className="w-12 h-6 bg-slate-700 rounded-full relative cursor-pointer group">
+                           <div className="absolute left-1 top-1 w-4 h-4 bg-slate-400 rounded-full group-hover:bg-white transition-all" />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="pt-8 flex justify-end">
+                    <button className="btn-primary px-10 py-4 font-bold text-xs uppercase tracking-widest shadow-xl shadow-indigo-600/20">
+                      Update Store Config
+                    </button>
+                  </div>
+                </div>
+              )}
+
             </div>
           </div>
         </div>

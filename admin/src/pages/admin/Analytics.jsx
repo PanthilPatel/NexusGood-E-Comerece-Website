@@ -288,8 +288,10 @@ export default function AdminAnalytics() {
         <div className="bg-[#0f172a] border border-white/[0.07] rounded-3xl p-8 space-y-6">
           <div className="flex justify-between items-start">
             <div>
-              <h3 className="text-lg font-bold text-white">Orders per Month</h3>
-              <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest mt-0.5">Last 12 months</p>
+              <h3 className="text-lg font-bold text-white">Orders Pulse</h3>
+              <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest mt-0.5">
+                {range === 'day' ? 'Hourly Order Volume' : range === 'year' ? 'Monthly Annual View' : range === 'all' ? 'Lifetime Orders' : 'Last 30 Days'}
+              </p>
             </div>
             <div className="text-right">
               <p className="text-2xl font-bold text-white">

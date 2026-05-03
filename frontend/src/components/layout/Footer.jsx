@@ -58,23 +58,23 @@ export default function Footer() {
           <div>
             <h3 className="text-white font-bold text-lg mb-6">Support</h3>
             <ul className="space-y-4">
-              <li className="flex items-center gap-3 text-sm group cursor-pointer">
-                <div className="p-2 bg-white/5 rounded-lg group-hover:bg-primary/10 transition-colors">
-                  <Mail className="w-4 h-4 text-primary" />
+              <li className="flex items-center gap-3 text-slate-400 group cursor-pointer">
+                <div className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center group-hover:bg-indigo-500 transition-colors">
+                  <Mail size={14} className="group-hover:text-white transition-colors" />
                 </div>
-                <span className="group-hover:text-white transition-colors">ops@nexusgood.com</span>
+                <span className="group-hover:text-white transition-colors">support@nexusgood.com</span>
               </li>
-              <li className="flex items-center gap-3 text-sm group cursor-pointer">
-                <div className="p-2 bg-white/5 rounded-lg group-hover:bg-primary/10 transition-colors">
-                  <Phone className="w-4 h-4 text-primary" />
+              <li className="flex items-center gap-3 text-slate-400 group cursor-pointer">
+                <div className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center group-hover:bg-indigo-500 transition-colors">
+                  <Phone size={14} className="group-hover:text-white transition-colors" />
                 </div>
-                <span className="group-hover:text-white transition-colors">+91 98765 43210</span>
+                <span className="group-hover:text-white transition-colors">+91 87xxxxxx98</span>
               </li>
-              <li className="flex items-center gap-3 text-sm group cursor-pointer">
-                <div className="p-2 bg-white/5 rounded-lg group-hover:bg-primary/10 transition-colors">
-                  <MapPin className="w-4 h-4 text-primary" />
+              <li className="flex items-center gap-3 text-slate-400 group cursor-pointer">
+                <div className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center group-hover:bg-indigo-500 transition-colors">
+                  <MapPin size={14} className="group-hover:text-white transition-colors" />
                 </div>
-                <span className="group-hover:text-white transition-colors">Nexus Hub, Mumbai</span>
+                <span className="group-hover:text-white transition-colors">NexuGood, India</span>
               </li>
               <li className="pt-2">
                 <Link to="/support" className="text-[10px] font-bold text-primary hover:text-primary-light transition-colors uppercase tracking-[0.2em] border-b border-primary/30 pb-1">

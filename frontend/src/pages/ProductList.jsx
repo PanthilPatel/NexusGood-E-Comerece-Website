@@ -26,7 +26,15 @@ export default function ProductList() {
   useEffect(() => {
     fetchProducts();
     window.scrollTo(0, 0);
-  }, [fetchProducts]);
+
+    // Dynamic Protocol Switch based on path
+    if (location.pathname === '/new') {
+      setSortBy('newest');
+      setSelectedCategory('All');
+    } else if (location.pathname === '/collections') {
+      setSortBy('price-high'); // Collections usually focus on premium items
+    }
+  }, [fetchProducts, location.pathname]);
 
   const categories = ['All', ...new Set((products || []).map(p => p.category?.name).filter(Boolean))];
 

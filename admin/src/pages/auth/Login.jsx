@@ -26,7 +26,7 @@ export default function Login() {
     try {
       await login(email, password);
       toast.success('Welcome back, Admin!');
-      navigate(from, { replace: true });
+      window.location.href = '/admin';
     } catch (err) {
       if (err.message === 'FORBIDDEN') {
         toast.error('Access denied. This panel is for administrators only.');

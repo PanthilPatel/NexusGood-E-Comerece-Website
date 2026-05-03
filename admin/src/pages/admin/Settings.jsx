@@ -24,11 +24,9 @@ export default function Settings() {
 
   const handleProfileUpdate = async (e) => {
     e.preventDefault();
-    
     if (profileData.newPassword && profileData.newPassword !== profileData.confirmPassword) {
       return toast.error('New passwords do not match');
     }
-
     try {
       await api.put('/auth/profile', {
         name: profileData.name,
@@ -36,10 +34,28 @@ export default function Settings() {
         currentPassword: profileData.currentPassword,
         newPassword: profileData.newPassword
       });
-      toast.success('Profile updated successfully! Refreshing session...');
-      // In a real app, you might want to re-login if email/password changed
+      toast.success('Profile updated successfully!');
     } catch (err) {
       toast.error(err.response?.data?.message || 'Update failed');
+    }
+  };
+
+  // Store Config State
+  const { maintenanceMode, setMaintenanceMode } = useSettingsStore();
+  const [storeConfig, setStoreConfig] = useState({
+    name: 'NexusGood Enterprise',
+    currency: 'INR',
+    supportEmail: 'support@nexusgood.com',
+    maintenance: maintenanceMode
+  });
+
+  const handleStoreUpdate = async (e) => {
+    e.preventDefault();
+    try {
+      await setMaintenanceMode(storeConfig.maintenance);
+      toast.success('Store configuration updated!');
+    } catch (err) {
+      toast.error('Failed to update store config');
     }
   };
 
@@ -261,50 +277,60 @@ export default function Settings() {
               )}
 
               {activeTab === 'store' && (
-                <div className="space-y-8">
+                <form onSubmit={handleStoreUpdate} className="space-y-8">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                     <div className="space-y-3">
                       <label className="text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em] ml-1">Store Name</label>
                       <input 
                         type="text" 
-                        defaultValue="NexusGood Enterprise"
+                        value={storeConfig.name}
+                        onChange={(e) => setStoreConfig({...storeConfig, name: e.target.value})}
                         className="w-full bg-white/5 border border-white/5 rounded-2xl py-4 px-6 text-sm text-white focus:border-indigo-500/50 outline-none"
                       />
                     </div>
                     <div className="space-y-3">
                       <label className="text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em] ml-1">Global Currency</label>
-                      <select className="w-full bg-white/5 border border-white/5 rounded-2xl py-4 px-6 text-sm text-white focus:border-indigo-500/50 outline-none appearance-none cursor-pointer hover:bg-white/[0.08] transition-all">
-                        <option value="INR" className="bg-[#0f172a] text-white">INR (₹) - Indian Rupee</option>
-                        <option value="USD" className="bg-[#0f172a] text-white">USD ($) - US Dollar</option>
-                        <option value="EUR" className="bg-[#0f172a] text-white">EUR (€) - Euro</option>
+                      <select 
+                        value={storeConfig.currency}
+                        onChange={(e) => setStoreConfig({...storeConfig, currency: e.target.value})}
+                        className="w-full bg-white/5 border border-white/5 rounded-2xl py-4 px-6 text-sm text-white focus:border-indigo-500/50 outline-none appearance-none cursor-pointer"
+                      >
+                        <option value="INR" className="bg-[#0f172a]">INR (₹) - Indian Rupee</option>
+                        <option value="USD" className="bg-[#0f172a]">USD ($) - US Dollar</option>
+                        <option value="EUR" className="bg-[#0f172a]">EUR (€) - Euro</option>
                       </select>
                     </div>
                     <div className="space-y-3">
                       <label className="text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em] ml-1">Support Email</label>
                       <input 
                         type="email" 
-                        defaultValue="support@nexusgood.com"
+                        value={storeConfig.supportEmail}
+                        onChange={(e) => setStoreConfig({...storeConfig, supportEmail: e.target.value})}
                         className="w-full bg-white/5 border border-white/5 rounded-2xl py-4 px-6 text-sm text-white focus:border-indigo-500/50 outline-none"
                       />
                     </div>
                     <div className="space-y-3">
                       <label className="text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em] ml-1">Maintenance Mode</label>
-                      <div className="flex items-center justify-between p-4 bg-white/5 border border-white/5 rounded-2xl">
+                      <div 
+                        onClick={() => setStoreConfig({...storeConfig, maintenance: !storeConfig.maintenance})}
+                        className="flex items-center justify-between p-4 bg-white/5 border border-white/5 rounded-2xl cursor-pointer group hover:bg-white/[0.08] transition-all"
+                      >
                         <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">Offline Protocol</span>
-                        <div className="w-12 h-6 bg-slate-700 rounded-full relative cursor-pointer group">
-                           <div className="absolute left-1 top-1 w-4 h-4 bg-slate-400 rounded-full group-hover:bg-white transition-all" />
+                        <div className={`w-12 h-6 rounded-full relative transition-all ${storeConfig.maintenance ? 'bg-indigo-600' : 'bg-slate-700'}`}>
+                           <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-all ${storeConfig.maintenance ? 'left-7' : 'left-1'}`} />
                         </div>
                       </div>
                     </div>
                   </div>
 
                   <div className="pt-8 flex justify-end">
-                    <button className="btn-primary px-10 py-4 font-bold text-xs uppercase tracking-widest shadow-xl shadow-indigo-600/20">
+                    <button type="submit" className="btn-primary px-10 py-4 font-bold text-xs uppercase tracking-widest shadow-xl shadow-indigo-600/20">
                       Update Store Config
                     </button>
                   </div>
-                </div>
+                </form>
               )}
+
 
             </div>
           </div>

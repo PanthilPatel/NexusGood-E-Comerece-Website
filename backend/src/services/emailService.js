@@ -214,10 +214,35 @@ const sendWalletUpdate = async (user, amount, type, description) => {
   }
 };
 
+// ── Send password reset ───────────────────────────────────────────────────────
+const sendPasswordReset = async (user, resetUrl) => {
+  if (!process.env.RESEND_API_KEY) return;
+  try {
+    const body = `
+      <h2>Reset Your Password 🔐</h2>
+      <p>Hi <strong>${user.name}</strong>, we received a request to reset your password. Click the button below to choose a new one.</p>
+      <div class="info-box">
+        <p style="margin:0;font-size:13px;color:#64748b;">This link will expire in 1 hour for your security.</p>
+      </div>
+      <a href="${resetUrl}" class="btn">Reset Password</a>
+      <p style="font-size:12px;color:#94a3b8;margin-top:16px;">If you didn't request this, you can safely ignore this email.</p>`;
+
+    await resend.emails.send({
+      from: FROM,
+      to: user.email,
+      subject: '🔐 Reset your password — NexusGood',
+      html: wrap('Password Recovery', body),
+    });
+  } catch (err) {
+    console.error('Email error (passwordReset):', err.message);
+  }
+};
+
 module.exports = {
   sendOrderConfirmation,
   sendShippingUpdate,
   sendAbandonedCartEmail,
   sendReturnUpdate,
   sendWalletUpdate,
+  sendPasswordReset,
 };

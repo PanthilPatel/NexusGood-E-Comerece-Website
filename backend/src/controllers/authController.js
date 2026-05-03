@@ -343,8 +343,19 @@ exports.deleteAddress = async (req, res, next) => {
 exports.forgotPassword = async (req, res, next) => {
   try {
     const { email } = req.body;
-    // For now, we simulate success to allow the UI to work
-    // In a real app, you would send a reset email here
+    const user = await User.findOne({ email });
+
+    if (!user) {
+      // Security: Don't reveal if user exists, just return success
+      return res.json({ message: 'If an account exists with that email, a reset link has been sent.' });
+    }
+
+    // Generate a temporary reset token (valid for 1 hour)
+    const resetToken = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, { expiresIn: '1h' });
+    const resetUrl = `${process.env.CLIENT_URL || 'https://nexus-good-e-coomerece-website.vercel.app'}/reset-password?token=${resetToken}`;
+
+    await emailService.sendPasswordReset(user, resetUrl);
+
     res.json({ message: 'If an account exists with that email, a reset link has been sent.' });
   } catch (error) {
     next(error);

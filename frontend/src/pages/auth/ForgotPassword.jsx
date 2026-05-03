@@ -13,12 +13,7 @@ export default function ForgotPassword() {
     e.preventDefault();
     setIsLoading(true);
     try {
-      // Note: We'll add a simple endpoint for this or just simulate for now
-      // await api.post('/auth/forgot-password', { email });
-      
-      // Simulate API call for now to ensure UI works
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      
+      await api.post('/auth/forgot-password', { email });
       setIsSent(true);
       toast.success('Reset link sent to your email!');
     } catch (err) {

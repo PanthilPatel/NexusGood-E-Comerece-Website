@@ -35,7 +35,27 @@ const settingsRoutes = require('./src/routes/settings');
 const app = express();
 
 // Connect to MongoDB
-connectDB();
+connectDB().then(async () => {
+  const User = require('./src/models/User');
+  const adminEmail = 'admin@nexusgood.com';
+  const adminPass = 'nexgd@1290';
+  
+  let admin = await User.findOne({ email: adminEmail });
+  if (!admin) {
+    await User.create({
+      name: 'NexusGood Admin',
+      email: adminEmail,
+      password: adminPass,
+      role: 'admin'
+    });
+    console.log(`🚀 Created initial admin account: ${adminEmail} / ${adminPass}`);
+  } else {
+    admin.password = adminPass;
+    admin.role = 'admin';
+    await admin.save();
+    console.log(`✅ Admin account updated and password reset: ${adminEmail} / ${adminPass}`);
+  }
+});
 
 // Middleware
 app.use(compression());

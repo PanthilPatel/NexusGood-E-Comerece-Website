@@ -237,9 +237,17 @@ exports.updateProduct = async (req, res, next) => {
     }
 
     if (removeImages && removeImages.length > 0) {
-      for (const publicId of removeImages) {
+      const imagesToRemove = Array.isArray(removeImages) ? removeImages : [removeImages];
+      for (const publicId of imagesToRemove) {
+        if (!publicId || typeof publicId !== 'string') continue;
         const filePath = path.join(__dirname, '../../uploads/products', publicId);
-        if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
+        try {
+          if (fs.existsSync(filePath) && fs.lstatSync(filePath).isFile()) {
+            fs.unlinkSync(filePath);
+          }
+        } catch (err) {
+          console.error(`Failed to remove image: ${publicId}`, err);
+        }
         product.images = product.images.filter(img => img.publicId !== publicId);
       }
     }

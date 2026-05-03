@@ -296,18 +296,18 @@ export default function AdminAnalytics() {
           </div>
           <div className="h-[280px]">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={salesTrend}>
+              <BarChart data={salesTrend} barGap={8}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#ffffff05" vertical={false} />
-                <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 10, fontWeight: 600 }} dy={10} />
+                <XAxis dataKey="date" axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 10, fontWeight: 600 }} dy={10} />
                 <YAxis axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 10, fontWeight: 600 }} allowDecimals={false} />
                 <RechartsTooltip
                   cursor={{ fill: 'rgba(255,255,255,0.02)' }}
-                  contentStyle={{ backgroundColor: '#0f172a', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.07)' }}
+                  contentStyle={{ backgroundColor: '#0f172a', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.07)', boxShadow: '0 10px 15px -3px rgba(0,0,0,0.4)' }}
                   formatter={v => [v, 'Orders']}
                 />
-                <Bar dataKey="orders" radius={[4, 4, 0, 0]}>
-                  {salesTrend.map((_, i) => (
-                    <Cell key={i} fill={i % 2 === 0 ? '#6366f1' : '#06b6d4'} />
+                <Bar dataKey="orders" radius={[6, 6, 0, 0]} barSize={range === 'day' ? 12 : 32}>
+                  {(salesTrend || []).map((_, i) => (
+                    <Cell key={i} fill={i % 2 === 0 ? '#6366f1' : '#06b6d4'} fillOpacity={0.8} />
                   ))}
                 </Bar>
               </BarChart>

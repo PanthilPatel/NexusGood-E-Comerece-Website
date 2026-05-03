@@ -39,7 +39,9 @@ export default function AdminLayout() {
   }, []);
 
   useEffect(() => {
-    const socket = io('http://localhost:5000');
+    // Connect to the base URL (remove /api if present)
+    const socketUrl = import.meta.env.VITE_API_URL?.replace('/api', '') || 'https://nexus-api-s7co.onrender.com';
+    const socket = io(socketUrl);
     
     socket.on('connect', () => {
       socket.emit('join_admin');
@@ -202,7 +204,7 @@ export default function AdminLayout() {
                     </button>
                     {showNotifications && <NotificationPanel onClose={() => setShowNotifications(false)} />}
                  </div>
-                 <a href="http://localhost:5174" target="_blank" rel="noreferrer" className="w-10 h-10 flex items-center justify-center bg-white/5 border border-white/10 rounded-xl text-slate-400 hover:text-emerald-400 transition-all" title="View Storefront">
+                 <a href="https://nexus-good-e-coomerece-website.vercel.app" target="_blank" rel="noreferrer" className="w-10 h-10 flex items-center justify-center bg-white/5 border border-white/10 rounded-xl text-slate-400 hover:text-emerald-400 transition-all" title="View Storefront">
                     <Globe size={18} />
                  </a>
               </div>

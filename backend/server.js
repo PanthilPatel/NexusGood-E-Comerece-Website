@@ -53,10 +53,8 @@ connectDB().then(async () => {
       await admin.save();
       console.log(`🚀 Created initial admin account: ${adminEmail} / ${adminPass}`);
     } else {
-      admin.password = adminPass;
-      admin.role = 'admin';
-      await admin.save();
-      console.log(`✅ Admin account FORCE RESET: ${adminEmail} / ${adminPass}`);
+      // Admin exists, don't overwrite their password anymore!
+      console.log(`✅ Admin account verified: ${adminEmail}`);
     }
   } catch (err) {
     console.error('❌ DEBUG: Admin Setup Failed:', err.message);

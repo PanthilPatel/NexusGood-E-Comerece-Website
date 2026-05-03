@@ -23,6 +23,7 @@ import Orders from './pages/Orders';
 import Profile from './pages/Profile';
 import Login from './pages/auth/Login';
 import Register from './pages/auth/Register';
+import ForgotPassword from './pages/auth/ForgotPassword';
 import Support from './pages/Support';
 import Wishlist from './pages/Wishlist';
 
@@ -67,6 +68,7 @@ export default function App() {
       {/* Auth pages — no layout */}
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
+      <Route path="/forgot-password" element={<ForgotPassword />} />
 
       {/* Customer pages with main layout */}
       <Route element={<MainLayout />}>

@@ -339,4 +339,14 @@ exports.deleteAddress = async (req, res, next) => {
   }
 };
 
-
+// POST /api/auth/forgot-password
+exports.forgotPassword = async (req, res, next) => {
+  try {
+    const { email } = req.body;
+    // For now, we simulate success to allow the UI to work
+    // In a real app, you would send a reset email here
+    res.json({ message: 'If an account exists with that email, a reset link has been sent.' });
+  } catch (error) {
+    next(error);
+  }
+};

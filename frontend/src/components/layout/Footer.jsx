@@ -74,7 +74,7 @@ export default function Footer() {
                 <div className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center group-hover:bg-indigo-500 transition-colors">
                   <MapPin size={14} className="group-hover:text-white transition-colors" />
                 </div>
-                <span className="group-hover:text-white transition-colors">NexuGood, India</span>
+                <span className="group-hover:text-white transition-colors">NexusGood, India</span>
               </li>
               <li className="pt-2">
                 <Link to="/support" className="text-[10px] font-bold text-primary hover:text-primary-light transition-colors uppercase tracking-[0.2em] border-b border-primary/30 pb-1">

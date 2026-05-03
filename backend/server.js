@@ -10,6 +10,8 @@ const mongoSanitize = require('express-mongo-sanitize');
 const connectDB = require('./src/config/db');
 const errorHandler = require('./src/middleware/errorHandler');
 const { authLimiter, apiLimiter } = require('./src/middleware/rateLimiter');
+const http = require('http');
+const { initSocket } = require('./src/config/socket');
 
 // Route imports
 const authRoutes = require('./src/routes/auth');
@@ -105,7 +107,12 @@ app.get('/api/health', (req, res) => {
 app.use(errorHandler);
 
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
+const server = http.createServer(app);
+
+// Initialize Socket.io
+initSocket(server, allowedOrigins);
+
+server.listen(PORT, () => {
   console.log(`🚀 NexusGood API running on port ${PORT}`);
 });
 

@@ -14,6 +14,7 @@ const Product = require('../models/Product');
 // Safe match builder — wraps $or + extra fields in $and to avoid key conflicts
 const revenueFilter = (extra = {}) => {
   const base = {
+    status: { $ne: 'cancelled' },
     $or: [
       { paymentStatus: 'paid' },
       { paymentMethod: 'COD', status: 'delivered' },
@@ -158,6 +159,7 @@ exports.getUserStats = async (req, res, next) => {
 exports.getOrderStats = async (req, res, next) => {
   try {
     const statusStats = await Order.aggregate([
+      { $match: revenueFilter() },
       { $group: { _id: '$status', count: { $sum: 1 } } },
     ]);
 
@@ -187,8 +189,10 @@ exports.getSummary = async (req, res, next) => {
     const startOfLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
     const endOfLastMonth   = new Date(now.getFullYear(), now.getMonth(), 0);
 
-    // Sales count — all non-cancelled
-    const countOrders = (extra) => Order.countDocuments({ status: { $ne: 'cancelled' }, ...extra });
+    // Sales count — realized only (Paid or COD)
+    const countOrders = (extra) => Order.countDocuments({ 
+      ...revenueFilter(extra)
+    });
 
     const [totalSales, thisMonthSales, lastMonthSales] = await Promise.all([
       countOrders({}),
@@ -392,7 +396,7 @@ exports.getOverview = async (req, res, next) => {
     ]);
     const totalRevenue = revResult[0]?.total || 0;
 
-    const totalOrders = await Order.countDocuments();
+    const totalOrders = await Order.countDocuments(revenueFilter());
     const totalUsers  = await User.countDocuments();
 
     const topProducts = await Product.find({ isActive: true })

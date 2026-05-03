@@ -9,6 +9,9 @@ import {
 import useAuthStore from '../../store/authStore';
 import toast from 'react-hot-toast';
 import NotificationPanel from './NotificationPanel';
+import { io } from 'socket.io-client';
+
+const NOTIFICATION_SOUND_URL = 'https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3';
 
 export default function AdminLayout() {
   const location = useLocation();
@@ -17,7 +20,9 @@ export default function AdminLayout() {
   const [collapsed, setCollapsed] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
+  const [showProfile, setShowProfile] = useState(false);
   const notificationRef = useRef(null);
+  const profileRef = useRef(null);
 
   // Close notifications on click outside
   useEffect(() => {
@@ -25,9 +30,35 @@ export default function AdminLayout() {
       if (notificationRef.current && !notificationRef.current.contains(event.target)) {
         setShowNotifications(false);
       }
+      if (profileRef.current && !profileRef.current.contains(event.target)) {
+        setShowProfile(false);
+      }
     };
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  useEffect(() => {
+    const socket = io('http://localhost:5000');
+    
+    socket.on('connect', () => {
+      socket.emit('join_admin');
+    });
+
+    socket.on('new_order', (data) => {
+      toast.success(`New Order from ${data.customer}!`, {
+        icon: '🛍️',
+        duration: 6000,
+      });
+      
+      const audio = new Audio(NOTIFICATION_SOUND_URL);
+      audio.play().catch(e => console.error('Audio play failed:', e));
+
+      // Trigger automatic refresh for the Orders page
+      window.dispatchEvent(new CustomEvent('refresh-orders'));
+    });
+
+    return () => socket.disconnect();
   }, []);
 
   useEffect(() => {
@@ -176,16 +207,48 @@ export default function AdminLayout() {
                  </a>
               </div>
               <div className="h-8 w-[1px] bg-white/5" />
-              <div className="flex items-center gap-4 group cursor-pointer">
-                 <div className="text-right">
-                    <p className="text-xs font-bold text-white uppercase tracking-tight">{user?.name}</p>
-                    <p className="text-[10px] font-bold text-indigo-500 uppercase tracking-widest">Root Admin</p>
-                 </div>
-                 <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-indigo-600 to-indigo-400 p-0.5 shadow-lg shadow-indigo-500/20 group-hover:scale-105 transition-transform">
-                    <div className="w-full h-full bg-[#0f172a] rounded-[0.8rem] flex items-center justify-center font-bold text-white text-lg">
-                       {user?.name?.charAt(0)}
+              <div className="relative" ref={profileRef}>
+                <div 
+                  onClick={() => setShowProfile(!showProfile)}
+                  className="flex items-center gap-4 group cursor-pointer"
+                >
+                   <div className="text-right">
+                      <p className="text-xs font-bold text-white uppercase tracking-tight">{user?.name}</p>
+                      <p className="text-[10px] font-bold text-indigo-500 uppercase tracking-widest">Root Admin</p>
+                   </div>
+                   <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-indigo-600 to-indigo-400 p-0.5 shadow-lg shadow-indigo-500/20 group-hover:scale-105 transition-transform">
+                      <div className="w-full h-full bg-[#0f172a] rounded-[0.8rem] flex items-center justify-center font-bold text-white text-lg">
+                         {user?.name?.charAt(0)}
+                      </div>
+                   </div>
+                </div>
+
+                {showProfile && (
+                  <div className="absolute right-0 top-full mt-4 w-64 bg-[#0f172a] border border-white/10 rounded-3xl shadow-2xl overflow-hidden z-[200] animate-in fade-in zoom-in-95 duration-200">
+                    <div className="p-6 border-b border-white/5 bg-white/[0.02]">
+                       <p className="text-xs font-bold text-white uppercase tracking-tight">{user?.name}</p>
+                       <p className="text-[9px] text-slate-500 font-bold uppercase tracking-widest mt-1">{user?.email}</p>
                     </div>
-                 </div>
+                    <div className="p-2">
+                       <button onClick={() => { setShowProfile(false); navigate('/admin/settings'); }} className="w-full flex items-center gap-3 px-4 py-3 text-slate-400 hover:text-white hover:bg-white/5 rounded-2xl transition-all">
+                          <Settings size={16} />
+                          <span className="text-xs font-bold uppercase tracking-widest">Global Config</span>
+                       </button>
+                       <button onClick={() => { setShowProfile(false); navigate('/admin/roles'); }} className="w-full flex items-center gap-3 px-4 py-3 text-slate-400 hover:text-white hover:bg-white/5 rounded-2xl transition-all">
+                          <Shield size={16} />
+                          <span className="text-xs font-bold uppercase tracking-widest">Permissions</span>
+                       </button>
+                       <div className="h-[1px] bg-white/5 my-2 mx-4" />
+                       <button 
+                        onClick={handleLogout}
+                        className="w-full flex items-center gap-3 px-4 py-3 text-rose-500 hover:bg-rose-500/10 rounded-2xl transition-all"
+                       >
+                          <LogOut size={16} />
+                          <span className="text-xs font-bold uppercase tracking-widest">Terminate Session</span>
+                       </button>
+                    </div>
+                  </div>
+                )}
               </div>
            </div>
         </header>

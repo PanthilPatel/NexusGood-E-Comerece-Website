@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Search, ExternalLink, AlertCircle, ChevronLeft, ShoppingBag } from 'lucide-react';
+import { Search, ExternalLink, AlertCircle, ChevronLeft, ShoppingBag, User, MapPin } from 'lucide-react';
 import api from '../../services/api';
 import toast from 'react-hot-toast';
 
@@ -30,6 +30,11 @@ export default function AdminOrders() {
   };
 
   useEffect(() => { fetchOrders(); }, [statusFilter]);
+
+  useEffect(() => {
+    window.addEventListener('refresh-orders', fetchOrders);
+    return () => window.removeEventListener('refresh-orders', fetchOrders);
+  }, []);
 
   const handleStatusUpdate = async (orderId, newStatus) => {
     try {

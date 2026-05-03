@@ -5,6 +5,7 @@ const Coupon = require('../models/Coupon');
 const User = require('../models/User');
 const { sendOrderConfirmation, sendShippingUpdate } = require('../services/emailService');
 const { generateInvoicePDF } = require('../services/invoiceService');
+const { emitNewOrder } = require('../config/socket');
 
 // POST /api/orders/checkout
 exports.checkout = async (req, res, next) => {
@@ -142,19 +143,22 @@ exports.checkout = async (req, res, next) => {
       status: paymentMethod === 'COD' ? 'processing' : 'pending',
     });
 
-    // Reduce stock and increment soldCount
-    for (const item of orderItems) {
-      await Product.findByIdAndUpdate(item.product, {
-        $inc: { stock: -item.quantity, soldCount: item.quantity },
-      });
-    }
-
-    // Clear cart after successful order
-    await Cart.findOneAndUpdate({ user: req.user._id }, { items: [] });
-
     const populatedOrder = await Order.findById(order._id)
       .populate('items.product', 'name images price')
       .populate('user', 'name email');
+
+    // Reduce stock and clear cart ONLY for COD
+    if (paymentMethod === 'COD') {
+      for (const item of orderItems) {
+        await Product.findByIdAndUpdate(item.product, {
+          $inc: { stock: -item.quantity, soldCount: item.quantity },
+        });
+      }
+      await Cart.findOneAndUpdate({ user: req.user._id }, { items: [] });
+      
+      // Real-time notification
+      emitNewOrder(populatedOrder);
+    }
 
     // Send order confirmation email (non-blocking)
     sendOrderConfirmation(populatedOrder.user, populatedOrder).catch(() => {});
@@ -220,7 +224,12 @@ exports.getAllOrders = async (req, res, next) => {
     const { page = 1, limit = 20, status } = req.query;
     const skip = (Number(page) - 1) * Number(limit);
 
-    const query = {};
+    const query = {
+      $or: [
+        { paymentMethod: 'COD' },
+        { paymentMethod: 'Online', paymentStatus: 'paid' }
+      ]
+    };
     if (status) query.status = status;
 
     const total = await Order.countDocuments(query);
@@ -247,7 +256,56 @@ exports.getAllOrders = async (req, res, next) => {
   }
 };
 
-// PUT /api/orders/:id/status — admin update order status
+// PUT /api/orders/:id/cancel — user cancel their own order
+exports.cancelMyOrder = async (req, res, next) => {
+  try {
+    const order = await Order.findOne({ _id: req.params.id, user: req.user._id });
+
+    if (!order) {
+      return res.status(404).json({ message: 'Order not found.' });
+    }
+
+    if (order.status !== 'pending') {
+      return res.status(400).json({ message: 'Only pending orders can be cancelled.' });
+    }
+
+    order.status = 'cancelled';
+    
+    // 1. Restore Stock
+    for (const item of order.items) {
+      await Product.findByIdAndUpdate(item.product, {
+        $inc: { stock: item.quantity, soldCount: -item.quantity },
+      });
+    }
+
+    // 2. Process Refund to Wallet if paid
+    if (order.paymentStatus === 'paid') {
+      const Wallet = require('../models/Wallet');
+      let wallet = await Wallet.findOne({ user: req.user._id });
+      
+      if (!wallet) {
+        wallet = new Wallet({ user: req.user._id, balance: 0, transactions: [] });
+      }
+
+      wallet.balance += order.totalAmount;
+      wallet.transactions.push({
+        type: 'credit',
+        amount: order.totalAmount,
+        description: `Refund for cancelled order #${order._id.toString().slice(-6).toUpperCase()}`,
+        order: order._id,
+        status: 'completed'
+      });
+
+      await wallet.save();
+      order.paymentStatus = 'refunded';
+    }
+
+    await order.save();
+    res.json({ message: 'Order cancelled successfully.', order });
+  } catch (error) {
+    next(error);
+  }
+};
 exports.updateOrderStatus = async (req, res, next) => {
   try {
     const { status } = req.body;
@@ -267,12 +325,39 @@ exports.updateOrderStatus = async (req, res, next) => {
       return res.status(404).json({ message: 'Order not found.' });
     }
 
-    // If cancelled, restore stock
+    // If cancelled, restore stock and refund if paid
     if (status === 'cancelled') {
+      // 1. Restore Stock
       for (const item of order.items) {
         await Product.findByIdAndUpdate(item.product._id || item.product, {
           $inc: { stock: item.quantity, soldCount: -item.quantity },
         });
+      }
+
+      // 2. Process Refund to Wallet if order was paid
+      if (order.paymentStatus === 'paid') {
+        const Wallet = require('../models/Wallet');
+        let wallet = await Wallet.findOne({ user: order.user });
+        
+        // Create wallet if doesn't exist
+        if (!wallet) {
+          wallet = new Wallet({ user: order.user, balance: 0, transactions: [] });
+        }
+
+        wallet.balance += order.totalAmount;
+        wallet.transactions.push({
+          type: 'credit',
+          amount: order.totalAmount,
+          description: `Refund for cancelled order #${order._id.toString().slice(-6).toUpperCase()}`,
+          order: order._id,
+          status: 'completed'
+        });
+
+        await wallet.save();
+        
+        // Update order payment status to refunded
+        order.paymentStatus = 'refunded';
+        await order.save();
       }
     }
 
@@ -313,9 +398,15 @@ exports.downloadInvoice = async (req, res, next) => {
 // GET /api/orders/recent-purchases — Public endpoint for social proof
 exports.getRecentPurchases = async (req, res, next) => {
   try {
-    const orders = await Order.find({ 
-      status: { $nin: ['cancelled', 'pending'] } 
-    })
+    const query = {
+      status: { $nin: ['cancelled', 'pending'] },
+      $or: [
+        { paymentMethod: 'COD' },
+        { paymentMethod: 'Online', paymentStatus: 'paid' }
+      ]
+    };
+
+    const orders = await Order.find(query)
       .select('shippingAddress.city items createdAt')
       .populate('items.product', 'name images')
       .sort({ createdAt: -1 })

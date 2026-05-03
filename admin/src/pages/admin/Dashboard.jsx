@@ -27,23 +27,29 @@ export default function AdminDashboard() {
     fetchMaintenanceStatus();
   }, [fetchMaintenanceStatus]);
 
+  const fetchData = async () => {
+    try {
+      setLoading(true);
+      const [overviewRes, stockRes] = await Promise.all([
+        api.get('/analytics/overview'),
+        api.get('/analytics/inventory')
+      ]);
+      setData(overviewRes.data?.data || overviewRes.data || null);
+      setLowStock(stockRes.data?.lowStockProducts || []);
+    } catch (err) {
+      setError('Failed to sync metrics hub.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        setLoading(true);
-        const [overviewRes, stockRes] = await Promise.all([
-          api.get('/analytics/overview'),
-          api.get('/analytics/inventory')
-        ]);
-        setData(overviewRes.data?.data || overviewRes.data || null);
-        setLowStock(stockRes.data?.lowStockProducts || []);
-      } catch (err) {
-        setError('Failed to sync metrics hub.');
-      } finally {
-        setLoading(false);
-      }
-    };
     fetchData();
+  }, []);
+
+  useEffect(() => {
+    window.addEventListener('refresh-orders', fetchData);
+    return () => window.removeEventListener('refresh-orders', fetchData);
   }, []);
 
   const handleMaintenanceToggle = async (val) => {

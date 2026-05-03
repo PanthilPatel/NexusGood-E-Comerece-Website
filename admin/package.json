@@ -19,6 +19,7 @@
     "react-router-dom": "^6.21.1",
     "recharts": "^2.15.4",
     "shopelite-root": "file:..",
+    "socket.io-client": "^4.8.3",
     "util-deprecate": "^1.0.2",
     "zustand": "^4.4.7"
   },

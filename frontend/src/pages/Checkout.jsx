@@ -173,7 +173,7 @@ export default function Checkout() {
         },
         prefill: { name: user?.name, email: user?.email, contact: address.phone },
         theme: { color: '#6366f1' },
-        modal: { ondismiss: async () => { try { await api.put(`/orders/${dbOrder._id}/status`, { status: 'cancelled' }); } catch {} } }
+        modal: { ondismiss: async () => { try { await api.put(`/orders/${dbOrder._id}/cancel`); } catch {} } }
       };
       new window.Razorpay(options).open();
     } catch (err) {

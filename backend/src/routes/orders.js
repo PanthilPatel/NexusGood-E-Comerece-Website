@@ -11,6 +11,7 @@ router.use(verifyToken);
 
 router.post('/checkout', validateCheckout, orderController.checkout);
 router.get('/my', orderController.getMyOrders);
+router.put('/:id/cancel', orderController.cancelMyOrder);
 router.get('/:id', orderController.getOrderById);
 router.post('/:id/return', returnController.requestReturn);
 router.get('/:id/return', returnController.getReturnStatus);

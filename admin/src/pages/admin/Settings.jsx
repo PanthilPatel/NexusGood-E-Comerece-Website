@@ -5,6 +5,7 @@ import {
   Eye, EyeOff
 } from 'lucide-react';
 import useAuthStore from '../../store/authStore';
+import useSettingsStore from '../../store/settingsStore';
 import toast from 'react-hot-toast';
 import api from '../../services/api';
 
@@ -206,7 +207,7 @@ export default function Settings() {
                       </div>
                       <div className="p-4 bg-white rounded-3xl w-48 h-48 mx-auto md:mx-0 shadow-2xl shadow-black/50">
                         <img 
-                          src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=otpauth://totp/NexusGood:${user?.email}?secret=NEXUSGOODSECRETKEY&issuer=NexusGood`} 
+                          src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(`otpauth://totp/NexusGood:${user?.email}?secret=JBSWY3DPEHPK3PXP&issuer=NexusGood`)}`} 
                           alt="2FA QR Code"
                           className="w-full h-full"
                         />

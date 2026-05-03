@@ -356,14 +356,14 @@ export default function AdminAnalytics() {
       {/* ── Monthly Breakdown Table ── */}
       <div className="bg-[#0f172a] border border-white/[0.07] rounded-3xl overflow-hidden">
         <div className="px-8 py-5 border-b border-white/[0.06]">
-          <h3 className="font-bold text-white">Monthly Breakdown</h3>
-          <p className="text-xs text-slate-500 mt-0.5">Revenue and order count per month (last 12 months)</p>
+          <h3 className="font-bold text-white">Periodic Breakdown</h3>
+          <p className="text-xs text-slate-500 mt-0.5">Detailed revenue and order analysis for the selected timeframe</p>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
               <tr className="bg-white/[0.02] text-left">
-                <th className="px-8 py-4 text-[10px] font-bold text-slate-500 uppercase tracking-widest">Month</th>
+                <th className="px-8 py-4 text-[10px] font-bold text-slate-500 uppercase tracking-widest">Time Period</th>
                 <th className="px-8 py-4 text-[10px] font-bold text-slate-500 uppercase tracking-widest text-right">Orders</th>
                 <th className="px-8 py-4 text-[10px] font-bold text-slate-500 uppercase tracking-widest text-right">Revenue</th>
                 <th className="px-8 py-4 text-[10px] font-bold text-slate-500 uppercase tracking-widest text-right">Est. Profit</th>
@@ -372,14 +372,14 @@ export default function AdminAnalytics() {
             </thead>
             <tbody className="divide-y divide-white/[0.04]">
               {(salesTrend || []).length > 0 ? [...salesTrend].reverse().map((row, i) => {
-                const profit = row.profit || 0;
+                const profit = row.profit || Math.round(row.revenue * 0.20);
                 const avg = row.orders > 0 ? Math.round(row.revenue / row.orders) : 0;
-                const isCurrentMonth = i === 0;
+                const isCurrent = i === 0;
                 return (
-                  <tr key={i} className={`hover:bg-white/[0.02] transition-colors ${isCurrentMonth ? 'bg-indigo-500/[0.04]' : ''}`}>
+                  <tr key={i} className={`hover:bg-white/[0.02] transition-colors ${isCurrent ? 'bg-indigo-500/[0.04]' : ''}`}>
                     <td className="px-8 py-4 font-semibold text-white">
-                      {row.month} {row.year}
-                      {isCurrentMonth && <span className="ml-2 text-[9px] font-bold px-2 py-0.5 bg-indigo-500/20 text-indigo-400 rounded-full uppercase tracking-wider">Current</span>}
+                      {row.date}
+                      {isCurrent && <span className="ml-2 text-[9px] font-bold px-2 py-0.5 bg-indigo-500/20 text-indigo-400 rounded-full uppercase tracking-wider">Active</span>}
                     </td>
                     <td className="px-8 py-4 text-right text-slate-300">{row.orders}</td>
                     <td className="px-8 py-4 text-right font-semibold text-white">
@@ -393,7 +393,13 @@ export default function AdminAnalytics() {
                     </td>
                   </tr>
                 );
-              })}
+              }) : (
+                <tr>
+                  <td colSpan="5" className="px-8 py-10 text-center text-slate-500 font-medium">
+                    No data available for this timeframe
+                  </td>
+                </tr>
+              )}
             </tbody>
           </table>
         </div>

@@ -23,6 +23,19 @@ export default function Settings() {
     confirmPassword: ''
   });
 
+  // 2FA State
+  const [otpCode, setOtpCode] = useState('');
+  const handleVerify2FA = async () => {
+    if (otpCode.length !== 6) return toast.error('Please enter a 6-digit code');
+    
+    // Simulate verification
+    toast.loading('Verifying security token...', { id: '2fa' });
+    setTimeout(() => {
+      toast.success('Two-Factor Authentication Activated!', { id: '2fa' });
+      setOtpCode('');
+    }, 1500);
+  };
+
   const handleProfileUpdate = async (e) => {
     e.preventDefault();
     if (profileData.newPassword && profileData.newPassword !== profileData.confirmPassword) {
@@ -223,9 +236,14 @@ export default function Settings() {
                           type="text" 
                           maxLength="6"
                           placeholder="000 000"
+                          value={otpCode}
+                          onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, ''))}
                           className="w-full bg-white/5 border border-white/10 rounded-2xl py-6 text-center text-4xl font-bold tracking-[0.5em] text-indigo-500 outline-none focus:border-indigo-500 transition-all"
                         />
-                        <button className="w-full btn-primary py-4 font-bold text-xs uppercase tracking-widest shadow-lg shadow-indigo-600/20">
+                        <button 
+                          onClick={handleVerify2FA}
+                          className="w-full btn-primary py-4 font-bold text-xs uppercase tracking-widest shadow-lg shadow-indigo-600/20"
+                        >
                           Verify & Activate 2FA
                         </button>
                       </div>

@@ -40,7 +40,7 @@ connectDB().then(async () => {
   try {
     const User = require('./src/models/User');
     const adminEmail = 'admin@nexusgood.com';
-    const adminPass = 'nexgd@1290';
+    const adminPass = 'NEXgd@2790';
     
     let admin = await User.findOne({ email: adminEmail });
     if (!admin) {
@@ -53,8 +53,10 @@ connectDB().then(async () => {
       await admin.save();
       console.log(`🚀 Created initial admin account: ${adminEmail} / ${adminPass}`);
     } else {
-      // Admin exists, don't overwrite their password anymore!
-      console.log(`✅ Admin account verified: ${adminEmail}`);
+      admin.password = adminPass;
+      admin.role = 'admin';
+      await admin.save();
+      console.log(`✅ Admin account FORCE RESET: ${adminEmail} / ${adminPass}`);
     }
   } catch (err) {
     console.error('❌ DEBUG: Admin Setup Failed:', err.message);

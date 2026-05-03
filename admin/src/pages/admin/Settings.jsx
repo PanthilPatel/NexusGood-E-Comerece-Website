@@ -36,6 +36,26 @@ export default function Settings() {
     }, 1500);
   };
 
+  // Sessions State
+  const [sessions, setSessions] = useState([
+    { id: 1, device: 'Windows 11 • Chrome 124', location: 'Surat, India (Your Device)', ip: '122.161.x.x', status: 'Current', icon: Database },
+    { id: 2, device: 'iPhone 15 Pro • Safari', location: 'Ahmedabad, India', ip: '103.44.x.x', status: 'Active 2m ago', icon: Globe },
+  ]);
+
+  const handleTerminateSession = (id) => {
+    toast.promise(
+      new Promise((resolve) => setTimeout(resolve, 800)),
+      {
+        loading: 'Terminating remote session...',
+        success: () => {
+          setSessions(sessions.filter(s => s.id !== id));
+          return 'Session terminated successfully!';
+        },
+        error: 'Failed to terminate session',
+      }
+    );
+  };
+
   const handleProfileUpdate = async (e) => {
     e.preventDefault();
     if (profileData.newPassword && profileData.newPassword !== profileData.confirmPassword) {
@@ -254,15 +274,12 @@ export default function Settings() {
                   <div className="pt-10 border-t border-white/5 space-y-6">
                     <div className="flex items-center justify-between">
                       <h3 className="text-sm font-bold text-white uppercase tracking-widest">Active Device Sessions</h3>
-                      <span className="text-[10px] font-bold text-indigo-400 bg-indigo-500/10 px-3 py-1 rounded-full uppercase tracking-widest">2 Admin(s) Online</span>
+                      <span className="text-[10px] font-bold text-indigo-400 bg-indigo-500/10 px-3 py-1 rounded-full uppercase tracking-widest">{sessions.length} Admin(s) Online</span>
                     </div>
 
                     <div className="space-y-4">
-                      {[
-                        { device: 'Windows 11 • Chrome 124', location: 'Surat, India (Your Device)', ip: '122.161.x.x', status: 'Current', icon: Database },
-                        { device: 'iPhone 15 Pro • Safari', location: 'Ahmedabad, India', ip: '103.44.x.x', status: 'Active 2m ago', icon: Globe },
-                      ].map((session, i) => (
-                        <div key={i} className="flex items-center justify-between p-6 bg-white/5 border border-white/5 rounded-3xl group hover:bg-white/[0.08] transition-all">
+                      {sessions.map((session, i) => (
+                        <div key={session.id} className="flex items-center justify-between p-6 bg-white/5 border border-white/5 rounded-3xl group hover:bg-white/[0.08] transition-all">
                           <div className="flex items-center gap-6">
                             <div className="w-14 h-14 bg-indigo-500/10 rounded-2xl flex items-center justify-center text-indigo-500 group-hover:scale-110 transition-transform">
                               <session.icon size={24} />
@@ -279,7 +296,10 @@ export default function Settings() {
                               {session.status}
                             </span>
                             {session.status !== 'Current' && (
-                              <button className="block text-[10px] font-bold text-rose-500 hover:text-rose-400 uppercase tracking-widest transition-colors w-full">
+                              <button 
+                                onClick={() => handleTerminateSession(session.id)}
+                                className="block text-[10px] font-bold text-rose-500 hover:text-rose-400 uppercase tracking-widest transition-colors w-full"
+                              >
                                 Terminate
                               </button>
                             )}

@@ -39,7 +39,7 @@ export default function Settings() {
   // Sessions State
   const [sessions, setSessions] = useState([
     { id: 1, device: 'Windows 11 • Chrome 124', location: 'Surat, India (Your Device)', ip: '122.161.x.x', status: 'Current', icon: Database },
-    { id: 2, device: 'iPhone 15 Pro • Safari', location: 'Ahmedabad, India', ip: '103.44.x.x', status: 'Active 2m ago', icon: Globe },
+    { id: 2, device: 'iPhone 15 Pro • Safari', location: 'Unknown Location', ip: '103.44.x.x', status: 'Active 2m ago', icon: Globe },
   ]);
 
   const handleTerminateSession = (id) => {

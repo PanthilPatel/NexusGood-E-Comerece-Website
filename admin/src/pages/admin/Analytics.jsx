@@ -365,7 +365,7 @@ export default function AdminAnalytics() {
               </tr>
             </thead>
             <tbody className="divide-y divide-white/[0.04]">
-              {[...salesTrend].reverse().map((row, i) => {
+              {(salesTrend || []).length > 0 ? [...salesTrend].reverse().map((row, i) => {
                 const profit = row.profit || 0;
                 const avg = row.orders > 0 ? Math.round(row.revenue / row.orders) : 0;
                 const isCurrentMonth = i === 0;

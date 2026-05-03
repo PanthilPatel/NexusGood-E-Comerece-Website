@@ -385,31 +385,58 @@ exports.getLowStock = async (req, res, next) => {
   }
 };
 
-// GET /api/analytics/overview
+// GET /api/analytics/overview?range=day|month|year|all
 exports.getOverview = async (req, res, next) => {
   try {
+    const { range = 'month' } = req.query;
     const now = new Date();
+    let startDate;
+    let format = '%Y-%m-%d';
+    let tickCount = 7;
+
+    switch (range) {
+      case 'day':
+        startDate = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+        format = '%H:00';
+        tickCount = 24;
+        break;
+      case 'year':
+        startDate = new Date(now.getFullYear(), 0, 1);
+        format = '%Y-%m';
+        tickCount = 12;
+        break;
+      case 'all':
+        startDate = new Date(2020, 0, 1);
+        format = '%Y-%m';
+        tickCount = 24; // Limit to last 2 years for visualization
+        break;
+      case 'month':
+      default:
+        startDate = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+        format = '%Y-%m-%d';
+        tickCount = 30;
+        break;
+    }
 
     const revResult = await Order.aggregate([
-      { $match: revenueFilter() },
+      { $match: revenueFilter({ createdAt: { $gte: startDate } }) },
       { $group: { _id: null, total: { $sum: '$totalAmount' } } },
     ]);
     const totalRevenue = revResult[0]?.total || 0;
 
-    const totalOrders = await Order.countDocuments(revenueFilter());
-    const totalUsers  = await User.countDocuments();
+    const totalOrders = await Order.countDocuments(revenueFilter({ createdAt: { $gte: startDate } }));
+    const totalUsers  = await User.countDocuments({ createdAt: { $gte: startDate } });
 
     const topProducts = await Product.find({ isActive: true })
       .sort({ soldCount: -1 })
       .limit(5)
       .select('name price soldCount images');
 
-    const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
     const rawTrend = await Order.aggregate([
-      { $match: revenueFilter({ createdAt: { $gte: sevenDaysAgo } }) },
+      { $match: revenueFilter({ createdAt: { $gte: startDate } }) },
       {
         $group: {
-          _id: { $dateToString: { format: '%Y-%m-%d', date: '$createdAt' } },
+          _id: { $dateToString: { format, date: '$createdAt' } },
           revenue: { $sum: '$totalAmount' },
           count: { $sum: 1 },
         },
@@ -418,12 +445,29 @@ exports.getOverview = async (req, res, next) => {
     ]);
 
     const salesTrend = [];
-    for (let i = 6; i >= 0; i--) {
-      const d = new Date(now.getTime() - i * 24 * 60 * 60 * 1000);
-      const key = d.toISOString().slice(0, 10);
-      const label = d.toLocaleDateString('default', { month: 'short', day: 'numeric' });
-      const found = rawTrend.find(t => t._id === key);
-      salesTrend.push({ date: label, revenue: found ? found.revenue : 0, orders: found ? found.count : 0 });
+    if (range === 'day') {
+      for (let i = 23; i >= 0; i--) {
+        const d = new Date(now.getTime() - i * 60 * 60 * 1000);
+        const key = d.getHours().toString().padStart(2, '0') + ':00';
+        const found = rawTrend.find(t => t._id === key);
+        salesTrend.push({ date: key, revenue: found ? found.revenue : 0, orders: found ? found.count : 0 });
+      }
+    } else if (range === 'year' || range === 'all') {
+      for (let i = tickCount - 1; i >= 0; i--) {
+        const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+        const key = d.getFullYear() + '-' + (d.getMonth() + 1).toString().padStart(2, '0');
+        const label = d.toLocaleDateString('default', { month: 'short', year: '2-digit' });
+        const found = rawTrend.find(t => t._id === key);
+        salesTrend.push({ date: label, revenue: found ? found.revenue : 0, orders: found ? found.count : 0 });
+      }
+    } else {
+      for (let i = tickCount - 1; i >= 0; i--) {
+        const d = new Date(now.getTime() - i * 24 * 60 * 60 * 1000);
+        const key = d.toISOString().slice(0, 10);
+        const label = d.toLocaleDateString('default', { month: 'short', day: 'numeric' });
+        const found = rawTrend.find(t => t._id === key);
+        salesTrend.push({ date: label, revenue: found ? found.revenue : 0, orders: found ? found.count : 0 });
+      }
     }
 
     res.json({

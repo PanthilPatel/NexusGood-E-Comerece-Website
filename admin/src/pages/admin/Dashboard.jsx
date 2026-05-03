@@ -21,17 +21,18 @@ export default function AdminDashboard() {
   const [lowStock, setLowStock] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [range, setRange] = useState('month');
   const { maintenanceMode, fetchMaintenanceStatus, setMaintenanceMode } = useSettingsStore();
 
   useEffect(() => {
     fetchMaintenanceStatus();
   }, [fetchMaintenanceStatus]);
 
-  const fetchData = async () => {
+  const fetchData = async (selectedRange = range) => {
     try {
       setLoading(true);
       const [overviewRes, stockRes] = await Promise.all([
-        api.get('/analytics/overview'),
+        api.get(`/analytics/overview?range=${selectedRange}`),
         api.get('/analytics/inventory')
       ]);
       setData(overviewRes.data?.data || overviewRes.data || null);
@@ -44,8 +45,8 @@ export default function AdminDashboard() {
   };
 
   useEffect(() => {
-    fetchData();
-  }, []);
+    fetchData(range);
+  }, [range]);
 
   useEffect(() => {
     window.addEventListener('refresh-orders', fetchData);
@@ -177,14 +178,37 @@ export default function AdminDashboard() {
          
          {/* Growth Area Chart */}
          <div className="lg:col-span-8 glass-card p-10 space-y-10">
-            <div className="flex justify-between items-center">
+             <div className="flex justify-between items-center">
                <div className="space-y-1">
                   <h3 className="text-2xl font-bold tracking-tight text-white">Acquisition Pulse</h3>
-                  <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest">Real-time revenue stream analysis</p>
+                  <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest">
+                    {range === 'day' ? 'Today\'s Hourly Stream' : range === 'year' ? 'Annual performance review' : range === 'all' ? 'Lifetime revenue history' : '30-day growth analysis'}
+                  </p>
                </div>
-               <div className="flex gap-2">
-                  <div className="w-3 h-3 rounded-full bg-indigo-500" />
-                  <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Revenue</span>
+               <div className="flex items-center gap-4">
+                  {/* Timeframe Toggle */}
+                  <div className="flex bg-white/5 p-1 rounded-xl border border-white/5">
+                    {[
+                      { id: 'day', label: 'Day' },
+                      { id: 'month', label: 'Month' },
+                      { id: 'year', label: 'Year' },
+                      { id: 'all', label: 'All' }
+                    ].map((t) => (
+                      <button
+                        key={t.id}
+                        onClick={() => setRange(t.id)}
+                        className={`px-4 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-widest transition-all ${
+                          range === t.id ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/20' : 'text-slate-500 hover:text-white'
+                        }`}
+                      >
+                        {t.label}
+                      </button>
+                    ))}
+                  </div>
+                  <div className="flex gap-2">
+                    <div className="w-3 h-3 rounded-full bg-indigo-500" />
+                    <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Revenue</span>
+                  </div>
                </div>
             </div>
             

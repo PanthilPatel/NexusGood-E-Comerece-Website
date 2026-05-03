@@ -18,6 +18,7 @@ import AdminSupport from './pages/admin/Support';
 import AdminImport from './pages/admin/Import';
 import AdminInventory from './pages/admin/Inventory';
 import AdminRoles from './pages/admin/Roles';
+import AdminSettings from './pages/admin/Settings';
 
 import Login from './pages/auth/Login';
 import ErrorBoundary from './components/ErrorBoundary';
@@ -42,6 +43,7 @@ export default function App() {
         <Route path="import" element={<AdminImport />} />
         <Route path="inventory" element={<AdminInventory />} />
         <Route path="roles" element={<AdminRoles />} />
+        <Route path="settings" element={<AdminSettings />} />
       </Route>
 
       {/* Catch-all redirect to dashboard */}

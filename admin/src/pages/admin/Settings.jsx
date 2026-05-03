@@ -273,10 +273,10 @@ export default function Settings() {
                     </div>
                     <div className="space-y-3">
                       <label className="text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em] ml-1">Global Currency</label>
-                      <select className="w-full bg-white/5 border border-white/5 rounded-2xl py-4 px-6 text-sm text-white focus:border-indigo-500/50 outline-none appearance-none">
-                        <option value="INR">INR (₹) - Indian Rupee</option>
-                        <option value="USD">USD ($) - US Dollar</option>
-                        <option value="EUR">EUR (€) - Euro</option>
+                      <select className="w-full bg-white/5 border border-white/5 rounded-2xl py-4 px-6 text-sm text-white focus:border-indigo-500/50 outline-none appearance-none cursor-pointer hover:bg-white/[0.08] transition-all">
+                        <option value="INR" className="bg-[#0f172a] text-white">INR (₹) - Indian Rupee</option>
+                        <option value="USD" className="bg-[#0f172a] text-white">USD ($) - US Dollar</option>
+                        <option value="EUR" className="bg-[#0f172a] text-white">EUR (€) - Euro</option>
                       </select>
                     </div>
                     <div className="space-y-3">

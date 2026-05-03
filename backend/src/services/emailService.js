@@ -2,7 +2,13 @@ const { Resend } = require('resend');
 
 // Only initialize Resend if API key is present to prevent crash
 const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
-const FROM = process.env.FROM_EMAIL || 'NexusGood <noreply@nexusgood.com>';
+const FROM = process.env.FROM_EMAIL || 'onboarding@resend.dev';
+
+if (!process.env.RESEND_API_KEY) {
+  console.error('❌ EMAIL ERROR: RESEND_API_KEY is missing from Environment Variables!');
+} else {
+  console.log('📧 Email Service Initialized with Resend');
+}
 
 // ── HTML template helper ──────────────────────────────────────────────────────
 const wrap = (title, body) => `
@@ -216,7 +222,11 @@ const sendWalletUpdate = async (user, amount, type, description) => {
 
 // ── Send password reset ───────────────────────────────────────────────────────
 const sendPasswordReset = async (user, resetUrl) => {
-  if (!process.env.RESEND_API_KEY) return;
+  console.log(`📧 Attempting to send password reset to: ${user.email}`);
+  if (!process.env.RESEND_API_KEY) {
+    console.error('❌ Cannot send email: RESEND_API_KEY is missing');
+    return;
+  }
   try {
     const body = `
       <h2>Reset Your Password 🔐</h2>
@@ -233,8 +243,9 @@ const sendPasswordReset = async (user, resetUrl) => {
       subject: '🔐 Reset your password — NexusGood',
       html: wrap('Password Recovery', body),
     });
+    console.log(`✅ Reset email sent successfully to ${user.email}`);
   } catch (err) {
-    console.error('Email error (passwordReset):', err.message);
+    console.error('❌ Email error (passwordReset):', err.message);
   }
 };
 

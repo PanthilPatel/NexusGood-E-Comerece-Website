@@ -48,6 +48,7 @@ export default function AdminAnalytics() {
   const [salesTrend, setSalesTrend] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [range, setRange] = useState('month');
 
   useEffect(() => {
     const fetch = async () => {
@@ -55,9 +56,9 @@ export default function AdminAnalytics() {
         setLoading(true);
         setError(null);
         const [sumRes, revRes, trendRes] = await Promise.all([
-          api.get('/analytics/summary'),
-          api.get('/analytics/revenue'),
-          api.get('/analytics/sales-trend'),
+          api.get(`/analytics/summary?range=${range}`),
+          api.get(`/analytics/revenue?range=${range}`),
+          api.get(`/analytics/overview?range=${range}`),
         ]);
         setSummary(sumRes.data?.data || null);
         setRevenue(revRes.data || null);
@@ -69,7 +70,7 @@ export default function AdminAnalytics() {
       }
     };
     fetch();
-  }, []);
+  }, [range]);
 
   const handleExport = () => {
     if (!salesTrend.length) return;
@@ -178,10 +179,29 @@ export default function AdminAnalytics() {
           <h1 className="text-4xl font-outfit font-bold text-white tracking-tight">Performance Deck</h1>
           <p className="text-sm text-slate-500 font-light">Comprehensive analysis of revenue streams and growth velocity.</p>
         </div>
-        <button onClick={handleExport} disabled={!salesTrend.length}
-          className="flex items-center gap-2 px-5 py-2.5 bg-white/5 border border-white/10 rounded-xl text-sm font-bold text-slate-400 hover:text-white hover:bg-white/10 hover:border-white/20 transition-all uppercase tracking-widest disabled:opacity-40 disabled:cursor-not-allowed">
-          <Download size={16} /> Export CSV
-        </button>
+        <div className="flex items-center gap-4">
+          <div className="flex bg-white/5 p-1 rounded-xl border border-white/5">
+            {[
+              { id: 'day', label: 'Day' },
+              { id: 'month', label: 'Month' },
+              { id: 'year', label: 'Year' },
+              { id: 'all', label: 'All' }
+            ].map((t) => (
+              <button
+                key={t.id}
+                onClick={() => setRange(t.id)}
+                className={`px-4 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-widest transition-all ${range === t.id ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/20' : 'text-slate-500 hover:text-white'
+                  }`}
+              >
+                {t.label}
+              </button>
+            ))}
+          </div>
+          <button onClick={handleExport} disabled={!salesTrend.length}
+            className="flex items-center gap-2 px-5 py-2.5 bg-white/5 border border-white/10 rounded-xl text-sm font-bold text-slate-400 hover:text-white hover:bg-white/10 hover:border-white/20 transition-all uppercase tracking-widest disabled:opacity-40 disabled:cursor-not-allowed">
+            <Download size={16} /> Export CSV
+          </button>
+        </div>
       </div>
 
       {/* ── KPI Cards ── */}
@@ -225,7 +245,9 @@ export default function AdminAnalytics() {
           <div className="flex justify-between items-start">
             <div>
               <h3 className="text-lg font-bold text-white">Revenue Trend</h3>
-              <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest mt-0.5">Last 12 months</p>
+              <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest mt-0.5">
+                {range === 'day' ? 'Today\'s Hourly Stream' : range === 'year' ? 'Annual performance review' : range === 'all' ? 'Lifetime history' : 'Last 30 days'}
+              </p>
             </div>
             <div className="text-right">
               <p className="text-2xl font-bold text-white">₹{(revenue?.totalRevenue ?? 0).toLocaleString('en-IN')}</p>
@@ -244,7 +266,7 @@ export default function AdminAnalytics() {
                   </linearGradient>
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" stroke="#ffffff05" vertical={false} />
-                <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 10, fontWeight: 600 }} dy={10} />
+                <XAxis dataKey="date" axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 10, fontWeight: 600 }} dy={10} />
                 <YAxis axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 10, fontWeight: 600 }}
                   tickFormatter={v => v >= 1000 ? `₹${(v / 1000).toFixed(0)}k` : `₹${v}`} />
                 <RechartsTooltip

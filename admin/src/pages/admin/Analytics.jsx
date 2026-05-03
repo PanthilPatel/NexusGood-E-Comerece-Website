@@ -62,7 +62,7 @@ export default function AdminAnalytics() {
         ]);
         setSummary(sumRes.data?.data || null);
         setRevenue(revRes.data || null);
-        setSalesTrend(Array.isArray(trendRes.data?.salesTrend) ? trendRes.data.salesTrend : []);
+        setSalesTrend(trendRes.data?.data?.salesTrend || []);
       } catch (err) {
         setError('Failed to load analytics data.');
       } finally {

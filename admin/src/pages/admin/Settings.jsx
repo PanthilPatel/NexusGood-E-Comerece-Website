@@ -43,6 +43,7 @@ export default function Settings() {
   ]);
 
   const handleTerminateSession = (id) => {
+    console.log(`🛡️ SECURITY ACTION: Kicking session ID ${id}...`);
     toast.promise(
       new Promise((resolve) => setTimeout(resolve, 800)),
       {

@@ -15,6 +15,40 @@ import Skeleton from '../../components/ui/Skeleton';
 import useSettingsStore from '../../store/settingsStore';
 import toast from 'react-hot-toast';
 import { Package } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+
+const fadeInUp = {
+  initial: { opacity: 0, y: 20 },
+  animate: { opacity: 1, y: 0 },
+  transition: { duration: 0.5, ease: "easeOut" }
+};
+
+const staggerContainer = {
+  animate: {
+    transition: {
+      staggerChildren: 0.1
+    }
+  }
+};
+
+const CountUp = ({ value, duration = 1.5, prefix = '', suffix = '' }) => {
+  const [displayValue, setDisplayValue] = useState(0);
+
+  useEffect(() => {
+    let startTimestamp = null;
+    const step = (timestamp) => {
+      if (!startTimestamp) startTimestamp = timestamp;
+      const progress = Math.min((timestamp - startTimestamp) / (duration * 1000), 1);
+      setDisplayValue(Math.floor(progress * value));
+      if (progress < 1) {
+        window.requestAnimationFrame(step);
+      }
+    };
+    window.requestAnimationFrame(step);
+  }, [value, duration]);
+
+  return <span>{prefix}{displayValue.toLocaleString('en-IN')}{suffix}</span>;
+};
 
 export default function AdminDashboard() {
   const [data, setData] = useState(null);
@@ -116,7 +150,11 @@ export default function AdminDashboard() {
   ];
 
   return (
-    <div className="space-y-12 animate-fade-in">
+    <motion.div 
+      initial="initial"
+      animate="animate"
+      className="space-y-12"
+    >
       
       {/* Critical Stock Alerts */}
       {lowStock.length > 0 && (
@@ -137,29 +175,38 @@ export default function AdminDashboard() {
       )}
 
       {/* KPI Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <Link to="/admin/analytics" className="group/stat bg-[#0f172a] border border-white/[0.07] rounded-3xl p-6 hover:border-indigo-500/50 transition-all shadow-xl">
-          <div className="flex justify-between items-start mb-6">
-            <div className="p-3 bg-indigo-500/10 text-indigo-400 rounded-2xl group-hover/stat:bg-indigo-600 group-hover/stat:text-white transition-all">
-              <IndianRupee size={24} />
+      <motion.div 
+        variants={staggerContainer}
+        className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6"
+      >
+        <motion.div variants={fadeInUp}>
+          <Link to="/admin/analytics" className="block group/stat bg-[#0f172a] border border-white/[0.07] rounded-3xl p-6 hover:border-indigo-500/50 transition-all shadow-xl hover:scale-[1.02]">
+            <div className="flex justify-between items-start mb-6">
+              <div className="p-3 bg-indigo-500/10 text-indigo-400 rounded-2xl group-hover/stat:bg-indigo-600 group-hover/stat:text-white transition-all">
+                <IndianRupee size={24} />
+              </div>
+              <div className="text-[10px] font-bold text-indigo-400 bg-indigo-500/10 px-2 py-1 rounded-full uppercase tracking-widest border border-indigo-500/20">
+                View Analytics
+              </div>
             </div>
-            <div className="text-[10px] font-bold text-indigo-400 bg-indigo-500/10 px-2 py-1 rounded-full uppercase tracking-widest border border-indigo-500/20">
-              View Analytics
-            </div>
-          </div>
-          <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Net Revenue</p>
-          <h3 className="text-3xl font-bold text-white mt-1 tracking-tight font-outfit">
-            ₹{data?.totalRevenue?.toLocaleString('en-IN') || '0'}
-          </h3>
-          <p className="text-xs text-slate-500 mt-2 flex items-center gap-1.5">
-            <TrendingUp size={14} className="text-emerald-400" />
-            <span className="text-emerald-400 font-bold">+14%</span> vs last month
-          </p>
-        </Link>
+            <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Net Revenue</p>
+            <h3 className="text-3xl font-bold text-white mt-1 tracking-tight font-outfit">
+              <CountUp value={data?.totalRevenue || 0} prefix="₹" />
+            </h3>
+            <p className="text-xs text-slate-500 mt-2 flex items-center gap-1.5">
+              <TrendingUp size={14} className="text-emerald-400" />
+              <span className="text-emerald-400 font-bold">+14%</span> vs last month
+            </p>
+          </Link>
+        </motion.div>
         {kpis.slice(1).map((kpi, i) => (
-          <div key={i} className="glass-card p-8 space-y-8 hover:border-white/20 hover:scale-[1.02] transition-all">
+          <motion.div 
+            key={i} 
+            variants={fadeInUp}
+            className="glass-card p-8 space-y-8 hover:border-white/20 hover:scale-[1.02] transition-all group"
+          >
              <div className="flex justify-between items-start">
-                <div className={`w-14 h-14 ${kpi.bg} ${kpi.color} rounded-2xl flex items-center justify-center shadow-inner`}>
+                <div className={`w-14 h-14 ${kpi.bg} ${kpi.color} rounded-2xl flex items-center justify-center shadow-inner group-hover:scale-110 transition-transform`}>
                    <kpi.icon size={28} strokeWidth={1.5} />
                 </div>
                 <div className={`flex items-center gap-1 text-[10px] font-bold px-2 py-1 rounded-full ${kpi.up ? 'bg-emerald-500/10 text-emerald-500' : 'bg-rose-500/10 text-rose-500'}`}>
@@ -168,11 +215,13 @@ export default function AdminDashboard() {
              </div>
              <div>
                 <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">{kpi.label}</p>
-                <h4 className="text-3xl font-bold text-white mt-1 tracking-tight">{kpi.value}</h4>
+                <h4 className="text-3xl font-bold text-white mt-1 tracking-tight">
+                  <CountUp value={typeof kpi.value === 'number' ? kpi.value : parseInt(kpi.value) || 0} suffix={typeof kpi.value === 'string' && kpi.value.includes('%') ? '%' : ''} />
+                </h4>
              </div>
-          </div>
+          </motion.div>
         ))}
-      </div>
+      </motion.div>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
          
@@ -247,7 +296,12 @@ export default function AdminDashboard() {
          {/* Sidebar Stats */}
          <div className="lg:col-span-4 space-y-10">
             {/* Efficiency Node */}
-            <div className="bg-gradient-to-br from-indigo-600 to-indigo-900 rounded-[2.5rem] p-10 space-y-8 shadow-2xl shadow-indigo-500/20 relative overflow-hidden group">
+            <motion.div 
+              initial={{ x: 20, opacity: 0 }}
+              animate={{ x: 0, opacity: 1 }}
+              transition={{ delay: 0.5, duration: 0.8 }}
+              className="bg-gradient-to-br from-indigo-600 to-indigo-900 rounded-[2.5rem] p-10 space-y-8 shadow-2xl shadow-indigo-500/20 relative overflow-hidden group"
+            >
                <div className="absolute -right-10 -top-10 w-40 h-40 bg-white/10 rounded-full blur-3xl group-hover:scale-150 transition-transform duration-700" />
                <div className="w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center text-white backdrop-blur-md">
                   <Target size={32} />
@@ -260,10 +314,15 @@ export default function AdminDashboard() {
                </div>
                <div className="pt-4">
                   <div className="h-2 w-full bg-white/10 rounded-full overflow-hidden">
-                     <div className="h-full bg-white w-[84%] rounded-full shadow-[0_0_12px_rgba(255,255,255,0.5)]" />
+                     <motion.div 
+                        initial={{ width: 0 }}
+                        animate={{ width: "84.2%" }}
+                        transition={{ duration: 2, ease: "easeOut", delay: 1 }}
+                        className="h-full bg-white rounded-full shadow-[0_0_12px_rgba(255,255,255,0.5)]" 
+                     />
                   </div>
                </div>
-            </div>
+            </motion.div>
 
             {/* Performance Metrics */}
              <div className="glass-card p-10 space-y-8">
@@ -318,6 +377,6 @@ export default function AdminDashboard() {
              </div>
          </div>
       </div>
-    </div>
+    </motion.div>
   );
 }

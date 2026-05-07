@@ -3,6 +3,7 @@ import { ShoppingBag, Heart } from 'lucide-react';
 import useCartStore from '../../store/cartStore';
 import useWishlistStore from '../../store/wishlistStore';
 import toast from 'react-hot-toast';
+import { motion, AnimatePresence } from 'framer-motion';
 
 export default function ProductCard({ product, viewMode = 'grid' }) {
   const { addToCart } = useCartStore();
@@ -38,8 +39,22 @@ export default function ProductCard({ product, viewMode = 'grid' }) {
     : 0;
 
   return (
-    <Link to={`/products/${product._id}`} className={`group block animate-fade-in ${isList ? 'w-full' : ''}`}>
-      <div className={`glass-card overflow-hidden hover:border-primary/50 transition-all duration-500 shadow-xl hover:shadow-primary/10 flex ${isList ? 'flex-col md:flex-row' : 'flex-col'}`}>
+    <motion.div
+      initial={{ opacity: 0, y: 15 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true }}
+      transition={{ duration: 0.5 }}
+      className={`${isList ? 'w-full' : ''}`}
+    >
+      <Link 
+        to={`/products/${product._id}`} 
+        className="group block"
+      >
+        <motion.div 
+          whileHover={{ y: -5 }}
+          transition={{ type: "spring", stiffness: 300 }}
+          className={`glass-card overflow-hidden border border-white/[0.07] hover:border-primary/50 transition-all duration-500 shadow-xl hover:shadow-2xl hover:shadow-primary/5 flex ${isList ? 'flex-col md:flex-row' : 'flex-col'}`}
+        >
 
         {/* Image Container */}
         <div className={`relative overflow-hidden bg-space-950 flex-shrink-0 ${isList ? 'w-full md:w-80 aspect-square md:aspect-[4/5]' : 'aspect-[4/5]'}`}>
@@ -65,27 +80,35 @@ export default function ProductCard({ product, viewMode = 'grid' }) {
           )}
 
           {/* Quick actions (Floating in grid, or hidden in list) */}
-          {!isList && (
-            <div className="absolute inset-x-0 bottom-0 p-4 translate-y-full group-hover:translate-y-0 transition-transform duration-300 bg-gradient-to-t from-space-950/80 to-transparent flex gap-2">
-              <button
-                onClick={handleAddToCart}
-                disabled={product.stock === 0}
-                className="flex-1 btn-primary py-2 px-3 text-xs flex items-center justify-center gap-2 disabled:opacity-50"
+          <AnimatePresence>
+            {!isList && (
+              <motion.div 
+                initial={{ opacity: 0, y: 20 }}
+                whileHover={{ opacity: 1, y: 0 }}
+                className="absolute inset-x-0 bottom-0 p-4 bg-gradient-to-t from-space-950 to-transparent flex gap-2 z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
               >
-                <ShoppingBag size={13} /> Add to Bag
-              </button>
-              <button
-                onClick={handleToggleWishlist}
-                className={`p-2 backdrop-blur-md rounded-xl transition-all border ${
-                  isFavorited 
-                  ? 'bg-rose-500 border-rose-400 text-white shadow-lg shadow-rose-500/20' 
-                  : 'bg-white/10 border-white/5 text-white hover:bg-white/20'
-                }`}
-              >
-                <Heart size={15} fill={isFavorited ? 'currentColor' : 'none'} />
-              </button>
-            </div>
-          )}
+                <motion.button
+                  whileTap={{ scale: 0.95 }}
+                  onClick={handleAddToCart}
+                  disabled={product.stock === 0}
+                  className="flex-1 btn-primary py-2 px-3 text-xs flex items-center justify-center gap-2 disabled:opacity-50"
+                >
+                  <ShoppingBag size={13} /> Add to Bag
+                </motion.button>
+                <motion.button
+                  whileTap={{ scale: 0.9 }}
+                  onClick={handleToggleWishlist}
+                  className={`p-2 backdrop-blur-md rounded-xl transition-all border ${
+                    isFavorited 
+                    ? 'bg-rose-500 border-rose-400 text-white shadow-lg shadow-rose-500/20' 
+                    : 'bg-white/10 border-white/5 text-white hover:bg-white/20'
+                  }`}
+                >
+                  <Heart size={15} fill={isFavorited ? 'currentColor' : 'none'} />
+                </motion.button>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
 
         {/* Details Container */}
@@ -161,7 +184,8 @@ export default function ProductCard({ product, viewMode = 'grid' }) {
             )}
           </div>
         </div>
-      </div>
+      </motion.div>
     </Link>
-  );
+  </motion.div>
+);
 }

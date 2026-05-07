@@ -37,7 +37,7 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[#030712] relative overflow-hidden p-4">
+    <div className="min-h-screen flex items-center justify-center bg-transparent relative overflow-hidden p-4">
       {/* Background glow */}
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-indigo-600/10 rounded-full blur-[120px] pointer-events-none" />
 
@@ -53,7 +53,7 @@ export default function Login() {
         </div>
 
         {/* Card */}
-        <div className="bg-[#0f172a] border border-white/[0.07] rounded-3xl p-8 md:p-10 space-y-6">
+        <div className="bg-white/[0.03] backdrop-blur-md border border-white/[0.07] rounded-3xl p-8 md:p-10 space-y-6">
 
           {/* Access notice */}
           <div className="flex items-start gap-3 p-4 bg-amber-500/5 border border-amber-500/20 rounded-2xl">

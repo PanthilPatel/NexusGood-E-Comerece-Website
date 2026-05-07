@@ -79,7 +79,7 @@ function FlashSaleCard({ product, onAddToCart }) {
   const discountPercent = Math.round(((product.price - product.flashSalePrice) / product.price) * 100);
 
   return (
-    <div className="group relative bg-[#0f172a] border border-white/[0.05] rounded-[2rem] overflow-hidden hover:border-amber-500/30 transition-all duration-500">
+    <div className="group relative bg-white/[0.03] backdrop-blur-md border border-white/[0.05] rounded-[2rem] overflow-hidden hover:border-amber-500/30 transition-all duration-500">
       <div className="aspect-square relative overflow-hidden">
         <img 
           src={product.images[0]?.url} 

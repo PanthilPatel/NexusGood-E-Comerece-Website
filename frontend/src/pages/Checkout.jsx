@@ -186,7 +186,7 @@ export default function Checkout() {
   const inputClass = 'w-full bg-white/[0.04] border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder:text-slate-500 focus:outline-none focus:border-indigo-500/60 focus:bg-white/[0.06] transition-all';
 
   return (
-    <div className="min-h-screen bg-[#030712] pt-28 pb-20 px-4">
+    <div className="min-h-screen bg-transparent pt-28 pb-20 px-4">
       <div className="max-w-6xl mx-auto">
 
         {/* Header */}
@@ -217,7 +217,7 @@ export default function Checkout() {
 
             {/* STEP 1 — Address */}
             {step === 1 && (
-              <div className="bg-[#0f172a] border border-white/[0.07] rounded-2xl overflow-hidden">
+              <div className="bg-white/[0.03] backdrop-blur-md border border-white/[0.07] rounded-2xl overflow-hidden">
                 <div className="flex items-center gap-3 px-6 py-4 border-b border-white/[0.06]">
                   <div className="w-7 h-7 rounded-full bg-indigo-600 flex items-center justify-center text-white text-xs font-bold">1</div>
                   <h2 className="font-bold text-white">Shipping Address</h2>
@@ -318,7 +318,7 @@ export default function Checkout() {
             {step === 2 && (
               <>
                 {/* Address recap */}
-                <div className="bg-[#0f172a] border border-white/[0.07] rounded-2xl px-6 py-4 flex items-center justify-between">
+                <div className="bg-white/[0.03] backdrop-blur-md border border-white/[0.07] rounded-2xl px-6 py-4 flex items-center justify-between">
                   <div className="flex items-center gap-3">
                     <div className="w-7 h-7 rounded-full bg-emerald-600 flex items-center justify-center">
                       <CheckCircle size={14} className="text-white" />
@@ -336,7 +336,7 @@ export default function Checkout() {
                 </div>
 
                 {/* Payment options */}
-                <div className="bg-[#0f172a] border border-white/[0.07] rounded-2xl overflow-hidden">
+                <div className="bg-white/[0.03] backdrop-blur-md border border-white/[0.07] rounded-2xl overflow-hidden">
                   <div className="flex items-center gap-3 px-6 py-4 border-b border-white/[0.06]">
                     <div className="w-7 h-7 rounded-full bg-indigo-600 flex items-center justify-center text-white text-xs font-bold">2</div>
                     <h2 className="font-bold text-white">Payment Method</h2>
@@ -421,7 +421,7 @@ export default function Checkout() {
           <div className="lg:col-span-4 lg:sticky lg:top-28 space-y-4">
 
             {/* Coupon Box */}
-            <div className="bg-[#0f172a] border border-white/[0.07] rounded-2xl overflow-hidden">
+            <div className="bg-white/[0.03] backdrop-blur-md border border-white/[0.07] rounded-2xl overflow-hidden">
               <div className="px-5 py-4 border-b border-white/[0.06] flex items-center gap-2">
                 <Tag size={15} className="text-indigo-400" />
                 <h3 className="font-bold text-white text-sm">Promo Code</h3>
@@ -473,7 +473,7 @@ export default function Checkout() {
             </div>
 
             {/* Order Summary */}
-            <div className="bg-[#0f172a] border border-white/[0.07] rounded-2xl overflow-hidden">
+            <div className="bg-white/[0.03] backdrop-blur-md border border-white/[0.07] rounded-2xl overflow-hidden">
               <div className="px-5 py-4 border-b border-white/[0.06]">
                 <h3 className="font-bold text-white text-sm">Order Summary</h3>
               </div>

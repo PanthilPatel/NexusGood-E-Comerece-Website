@@ -25,7 +25,7 @@ export default function Footer() {
   };
 
   return (
-    <footer className="bg-[var(--space-950)] text-[var(--text-main)] mt-auto border-t border-[var(--border-main)] transition-colors duration-500">
+    <footer className="bg-transparent backdrop-blur-md text-[var(--text-main)] mt-auto border-t border-white/5 transition-colors duration-500">
       <div className="max-w-7xl mx-auto px-6 py-16">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12">
           {/* Brand */}

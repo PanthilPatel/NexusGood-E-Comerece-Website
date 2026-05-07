@@ -44,7 +44,7 @@ export default function Cart() {
   }
 
   return (
-    <div className="min-h-screen pt-32 pb-24 px-6 bg-space-950">
+    <div className="min-h-screen pt-32 pb-24 px-6 bg-transparent">
       <div className="max-w-7xl mx-auto">
         <h1 className="text-4xl md:text-6xl font-outfit font-bold text-white mb-12 tracking-tight">Shopping Bag</h1>
         

@@ -1,4 +1,5 @@
-import { Routes, Route, Navigate } from 'react-router-dom';
+import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useEffect } from 'react';
 import useAuthStore from './store/authStore';
 import useCartStore from './store/cartStore';
@@ -29,6 +30,7 @@ import Wishlist from './pages/Wishlist';
 
 
 import ErrorBoundary from './components/ErrorBoundary';
+import GlobalBackground from './components/common/GlobalBackground';
 
 export default function App() {
   const { rehydrate, isAuthenticated } = useAuthStore();
@@ -50,6 +52,8 @@ export default function App() {
     }
   }, [isAuthenticated, fetchCart, fetchWishlist]);
 
+  const location = useLocation();
+
   if (settingsLoading) {
     return (
       <div className="min-h-screen bg-[#030712] flex items-center justify-center">
@@ -62,34 +66,43 @@ export default function App() {
     return <Maintenance />;
   }
 
+  const pageTransition = {
+    initial: { opacity: 0, x: 10, filter: "blur(10px)" },
+    animate: { opacity: 1, x: 0, filter: "blur(0px)" },
+    exit: { opacity: 0, x: -10, filter: "blur(10px)" },
+    transition: { duration: 0.4, ease: "easeInOut" }
+  };
+
   return (
     <ErrorBoundary>
-      <Routes>
-      {/* Auth pages — no layout */}
-      <Route path="/login" element={<Login />} />
-      <Route path="/register" element={<Register />} />
-      <Route path="/forgot-password" element={<ForgotPassword />} />
+      <GlobalBackground />
+      <AnimatePresence mode="wait">
+        <Routes location={location} key={location.pathname}>
+          {/* Auth pages — no layout */}
+          <Route path="/login" element={<motion.div {...pageTransition}><Login /></motion.div>} />
+          <Route path="/register" element={<motion.div {...pageTransition}><Register /></motion.div>} />
+          <Route path="/forgot-password" element={<motion.div {...pageTransition}><ForgotPassword /></motion.div>} />
 
-      {/* Customer pages with main layout */}
-      <Route element={<MainLayout />}>
-        <Route path="/" element={<Home />} />
-        <Route path="/products" element={<ProductList />} />
-        <Route path="/collections" element={<ProductList />} />
-        <Route path="/new" element={<ProductList />} />
-        <Route path="/products/:id" element={<ProductDetail />} />
-        <Route path="/cart" element={<AuthGuard><Cart /></AuthGuard>} />
-        <Route path="/checkout" element={<AuthGuard><Checkout /></AuthGuard>} />
-        <Route path="/order-confirmation/:id" element={<AuthGuard><OrderConfirmation /></AuthGuard>} />
-        <Route path="/orders" element={<AuthGuard><Orders /></AuthGuard>} />
-        <Route path="/profile" element={<AuthGuard><Profile /></AuthGuard>} />
-        <Route path="/wishlist" element={<AuthGuard><Wishlist /></AuthGuard>} />
-        <Route path="/support" element={<Support />} />
-      </Route>
+          {/* Customer pages with main layout */}
+          <Route element={<MainLayout />}>
+            <Route path="/" element={<motion.div {...pageTransition}><Home /></motion.div>} />
+            <Route path="/products" element={<motion.div {...pageTransition}><ProductList /></motion.div>} />
+            <Route path="/collections" element={<motion.div {...pageTransition}><ProductList /></motion.div>} />
+            <Route path="/new" element={<motion.div {...pageTransition}><ProductList /></motion.div>} />
+            <Route path="/products/:id" element={<motion.div {...pageTransition}><ProductDetail /></motion.div>} />
+            <Route path="/cart" element={<AuthGuard><motion.div {...pageTransition}><Cart /></motion.div></AuthGuard>} />
+            <Route path="/checkout" element={<AuthGuard><motion.div {...pageTransition}><Checkout /></motion.div></AuthGuard>} />
+            <Route path="/order-confirmation/:id" element={<AuthGuard><motion.div {...pageTransition}><OrderConfirmation /></motion.div></AuthGuard>} />
+            <Route path="/orders" element={<AuthGuard><motion.div {...pageTransition}><Orders /></motion.div></AuthGuard>} />
+            <Route path="/profile" element={<AuthGuard><motion.div {...pageTransition}><Profile /></motion.div></AuthGuard>} />
+            <Route path="/wishlist" element={<AuthGuard><motion.div {...pageTransition}><Wishlist /></motion.div></AuthGuard>} />
+            <Route path="/support" element={<motion.div {...pageTransition}><Support /></motion.div>} />
+          </Route>
 
-
-      {/* Catch-all redirect */}
-      <Route path="*" element={<Navigate to="/" replace />} />
-      </Routes>
+          {/* Catch-all redirect */}
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </AnimatePresence>
     </ErrorBoundary>
   );
 }

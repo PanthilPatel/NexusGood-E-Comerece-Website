@@ -49,7 +49,7 @@
 
 @layer base {
   body {
-    background-color: var(--space-950);
+    background-color: transparent;
     color: var(--text-main);
     @apply font-sans antialiased transition-colors duration-500;
     font-feature-settings: "cv02", "cv03", "cv04", "cv11";
@@ -65,8 +65,10 @@
 @layer components {
   .glass-card {
     background: var(--glass);
-    backdrop-filter: blur(20px);
+    backdrop-filter: blur(12px);
     border: 1px solid var(--border-main);
+    will-change: transform;
+    backface-visibility: hidden;
     @apply rounded-3xl transition-all duration-300 shadow-sm;
   }
   
@@ -81,8 +83,9 @@
 
   .glass-panel {
     background: var(--glass);
-    backdrop-filter: blur(20px);
+    backdrop-filter: blur(12px);
     border-bottom: 1px solid var(--glass-border);
+    will-change: transform;
     @apply transition-all duration-300;
   }
   

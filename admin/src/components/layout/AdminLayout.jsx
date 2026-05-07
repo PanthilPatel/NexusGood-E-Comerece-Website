@@ -98,11 +98,11 @@ export default function AdminLayout() {
   };
 
   return (
-    <div className="min-h-screen bg-[#020617] flex text-slate-200 font-sans selection:bg-indigo-500/30">
+    <div className="min-h-screen bg-transparent flex text-slate-200 font-sans selection:bg-indigo-500/30">
       
       {/* Sidebar Navigation */}
       <aside 
-        className={`fixed left-0 top-0 h-screen bg-[#0f172a] border-r border-white/5 flex flex-col transition-all duration-500 z-[100] ${
+        className={`fixed left-0 top-0 h-screen bg-[#0f172a]/40 backdrop-blur-2xl border-r border-white/5 flex flex-col transition-all duration-500 z-[100] ${
           collapsed ? 'w-20' : 'w-72'
         } shadow-2xl shadow-black/50`}
       >
@@ -172,7 +172,7 @@ export default function AdminLayout() {
         {/* Global Control Header */}
         <header 
           className={`h-24 sticky top-0 z-[90] flex items-center justify-between px-10 transition-all duration-300 ${
-            scrolled ? 'bg-[#020617]/80 backdrop-blur-xl border-b border-white/5 shadow-xl' : 'bg-transparent'
+            scrolled ? 'bg-black/20 backdrop-blur-xl border-b border-white/5 shadow-xl' : 'bg-transparent'
           }`}
         >
            <div className="flex items-center gap-6">

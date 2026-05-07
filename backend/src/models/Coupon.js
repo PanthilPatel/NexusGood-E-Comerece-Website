@@ -48,7 +48,7 @@ const couponSchema = new mongoose.Schema({
   timestamps: true,
 });
 
-couponSchema.index({ code: 1 });
+// Code is already unique in schema
 couponSchema.index({ isActive: 1, expiresAt: 1 });
 
 module.exports = mongoose.model('Coupon', couponSchema);

@@ -105,7 +105,7 @@ export default function Home() {
                          <div className="flex justify-between items-center pt-2">
                             <span className="text-lg font-bold text-[var(--text-heading)]">₹{featured.price.toLocaleString('en-IN')}</span>
                             <div className="p-2 bg-primary text-white rounded-xl shadow-lg shadow-primary/20 group-hover:scale-110 transition-transform">
-                              <ChevronRight size={16} />
+                               <ChevronRight size={16} />
                             </div>
                          </div>
                       </div>

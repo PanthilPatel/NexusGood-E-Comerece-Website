@@ -28,7 +28,7 @@ const cartSchema = new mongoose.Schema({
   timestamps: true,
 });
 
-cartSchema.index({ user: 1 });
+// User is already unique in the schema definition
 cartSchema.index({ lastModifiedAt: 1 });
 
 module.exports = mongoose.model('Cart', cartSchema);
